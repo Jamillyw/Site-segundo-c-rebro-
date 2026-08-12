@@ -1,0 +1,2087 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jamilly OS</title>
+
+<style>
+:root{
+  --bg:#080d1b;--bg2:#0d1428;--card:#121a34;--card2:#0c1329;--border:#27345c;
+  --text:#f5f7ff;--muted:#929ebe;--primary:#6978ff;--green:#40d8b0;--purple:#a56cff;
+  --pink:#e66bb5;--yellow:#e9c85b;--red:#ef6c85;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  min-height:100vh;
+  background:radial-gradient(circle at 80% 0%,#26376f 0%,transparent 35%),linear-gradient(135deg,var(--bg),#0a1021);
+  color:var(--text);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+.app{min-height:100vh;display:flex}
+.sidebar{
+  position:fixed;left:0;top:0;bottom:0;width:76px;background:#070c1aee;border-right:1px solid var(--border);
+  display:flex;flex-direction:column;align-items:center;padding:16px 8px;z-index:20;
+}
+.logo{
+  width:44px;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,var(--primary),var(--purple));font-size:20px;font-weight:900;margin-bottom:16px;flex-shrink:0;
+}
+.sidebar-nav{display:flex;flex-direction:column;gap:5px;width:100%;overflow-y:auto}
+.side-btn{height:40px;width:100%;border:0;border-radius:11px;background:transparent;color:var(--muted);font-size:17px;flex-shrink:0}
+.side-btn:hover,.side-btn.active{background:var(--primary);color:white}
+.profile{margin-top:10px;width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--green),var(--primary));display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0}
+.main{width:calc(100% - 76px);margin-left:76px;padding:26px;max-width:1500px}
+.header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px}
+.header small{color:var(--green);text-transform:uppercase;letter-spacing:.12em;font-size:11px;font-weight:800}
+.header h1{font-size:28px;margin-top:4px}
+.muted{color:var(--muted)}
+.clock{text-align:right;color:var(--muted)}
+.clock strong{display:block;color:white;font-size:22px}
+.page{display:none}
+.page.active{display:block}
+.card{background:#121a34ed;border:1px solid var(--border);border-radius:16px;padding:18px;box-shadow:0 15px 50px #00000025}
+.grid{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(280px,.75fr);gap:17px}
+.hero{min-height:220px;display:grid;grid-template-columns:1fr 170px;align-items:center;gap:20px}
+.label{color:var(--green);text-transform:uppercase;font-size:11px;letter-spacing:.1em;font-weight:800}
+.xp{font-size:42px;font-weight:900;margin:4px 0}
+.xp span{color:var(--primary)}
+.progress{width:100%;height:9px;background:#080e20;border-radius:999px;overflow:hidden;margin-top:15px}
+.progress-bar{height:100%;width:0;background:linear-gradient(90deg,var(--primary),var(--green));transition:.3s}
+.circle{width:145px;height:145px;border-radius:50%;background:conic-gradient(var(--primary) 0deg,#29345b 0deg);display:flex;align-items:center;justify-content:center;margin:auto;position:relative}
+.circle:after{content:"";position:absolute;width:112px;height:112px;border-radius:50%;background:var(--card)}
+.circle span{position:relative;z-index:2;font-size:25px;font-weight:900}
+.title{font-size:16px;margin-bottom:13px}
+.title-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:13px;flex-wrap:wrap;gap:6px}
+.title-row .title{margin-bottom:0}
+.task{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid #222d50;flex-wrap:wrap}
+.task:last-child{border-bottom:0}
+.task input[type=checkbox]{width:18px;height:18px;accent-color:var(--primary)}
+.task-time{color:var(--muted);font-size:12px;min-width:44px}
+.task.done .task-name{color:#687494;text-decoration:line-through}
+.task-name{flex:1;min-width:80px}
+.task-actions{margin-left:auto;display:flex;gap:5px}
+.small-btn{border:1px solid var(--border);background:#0b1228;color:var(--muted);border-radius:7px;padding:5px 7px;font-size:11px}
+.small-btn:hover{color:white;border-color:var(--primary)}
+.add{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.input{width:100%;min-width:0;background:#080e20;color:white;border:1px solid var(--border);border-radius:10px;padding:10px 12px;outline:none}
+.input:focus{border-color:var(--primary)}
+textarea.input{resize:vertical}
+.btn{border:0;border-radius:10px;background:var(--primary);color:white;padding:10px 15px;font-weight:700}
+.btn:hover{filter:brightness(1.1)}
+.summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.summary{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:12px}
+.summary small{color:var(--muted)}
+.summary strong{display:block;font-size:21px;margin-top:4px}
+.priority{display:flex;gap:10px;padding:11px;background:var(--card2);border:1px solid var(--border);border-radius:11px;margin-bottom:8px}
+.priority-number{color:var(--primary);font-weight:900}
+.routine-top{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:15px;flex-wrap:wrap}
+.week-controls{display:flex;align-items:center;gap:7px}
+.icon-btn{width:35px;height:35px;border:1px solid var(--border);background:#0b1228;color:white;border-radius:9px}
+.week-title{min-width:180px;text-align:center;font-size:14px;font-weight:700}
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:7px;margin-bottom:12px}
+.day{border:1px solid var(--border);background:#0d142b;color:var(--muted);border-radius:10px;padding:9px 4px;text-align:center}
+.day strong{display:block;font-size:11px}
+.day span{font-size:18px;font-weight:800}
+.day.today{border-color:var(--green)}
+.day.selected{background:var(--primary);color:white}
+.calendar-wrapper{overflow:auto;border:1px solid var(--border);border-radius:13px}
+.calendar{min-width:820px;display:grid;grid-template-columns:60px repeat(7,1fr)}
+.calendar>div{min-height:52px;border-right:1px solid #202a4a;border-bottom:1px solid #202a4a}
+.calendar-head{min-height:42px!important;background:#151e3d;padding:9px 4px;text-align:center;font-size:10px;font-weight:800}
+.hour{color:var(--muted);font-size:10px;text-align:right;padding:7px}
+.slot{background:#0b1228;position:relative}
+.event{position:absolute;top:3px;left:3px;right:3px;background:#2938a6;border-left:4px solid var(--green);border-radius:7px;padding:5px;font-size:10px;overflow:hidden;cursor:pointer;z-index:2}
+.event:hover{filter:brightness(1.15)}
+.event small{display:block;color:#d9deff;margin-top:2px}
+.chart-wrap{width:100%;height:170px;position:relative}
+.chart-wrap canvas{width:100%;height:100%}
+.routine-mini{display:flex;flex-direction:column;gap:8px}
+.routine-mini-item{display:flex;align-items:center;gap:10px;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:9px 11px;flex-wrap:wrap}
+.routine-mini-item .rtime{color:var(--green);font-weight:800;font-size:12px;min-width:78px}
+.routine-mini-empty{color:var(--muted);font-size:13px;padding:6px 0}
+.badge{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;padding:4px 8px;border-radius:999px;background:#1d2748;color:var(--muted);white-space:nowrap}
+.badge.blue{background:#1c2554;color:#9aa8ff}
+.badge.green{background:#0f3a35;color:var(--green)}
+.badge.purple{background:#2c1c4a;color:var(--purple)}
+.badge.yellow{background:#3a3115;color:var(--yellow)}
+.badge.pink{background:#3a1f30;color:var(--pink)}
+.entity-card{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:13px;margin-bottom:10px}
+.entity-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px;flex-wrap:wrap}
+.entity-name{font-weight:700;font-size:15px}
+.entity-sub{color:var(--muted);font-size:12px;margin-top:4px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.entity-actions{display:flex;gap:5px;flex-wrap:wrap}
+.progress-mini{width:100%;height:7px;background:#080e20;border-radius:999px;overflow:hidden;margin-top:8px}
+.progress-mini-bar{height:100%;background:linear-gradient(90deg,var(--primary),var(--green))}
+.stepper{display:flex;align-items:center;gap:8px;margin-top:9px}
+.stepper .small-btn{padding:5px 10px;font-size:13px}
+.stepper span{font-size:12px;color:var(--muted)}
+.form-row{display:grid;grid-template-columns:1.3fr 1fr 1fr auto;gap:8px}
+.form-row.two{grid-template-columns:1fr 1fr auto}
+.form-row.three{grid-template-columns:1fr 1fr 1fr auto}
+.empty-hint{color:var(--muted);font-size:13px;padding:10px 0}
+.weekday-picker{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.weekday-picker label{display:flex;align-items:center;gap:4px;background:#0b1228;border:1px solid var(--border);border-radius:8px;padding:5px 8px;font-size:11px;color:var(--muted)}
+.subtask-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #1c2547}
+.subtask-row:last-child{border-bottom:0}
+.subtask-row input[type=checkbox]{accent-color:var(--primary)}
+.subtask-row span{flex:1;font-size:13px}
+.subtask-row.done span{text-decoration:line-through;color:#687494}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.stat-box{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:14px}
+.stat-box small{color:var(--muted);display:block}
+.stat-box strong{font-size:24px;display:block;margin-top:6px}
+.compare-row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid #1c2547;font-size:13px}
+.compare-row:last-child{border-bottom:0}
+.search-wrap{position:relative;margin-bottom:18px}
+.search-results{margin-top:10px;display:none}
+.modal{position:fixed;inset:0;background:#000000aa;display:none;align-items:center;justify-content:center;padding:20px;z-index:100}
+.modal.show{display:flex}
+.modal-box{width:min(480px,100%);background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;max-height:88vh;overflow-y:auto}
+.modal-box h2{margin-bottom:15px}
+.form-group{margin-bottom:11px}
+.form-group label{display:block;font-size:11px;color:var(--muted);margin-bottom:5px}
+.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:15px;flex-wrap:wrap}
+.placeholder{min-height:300px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.placeholder-icon{width:65px;height:65px;border-radius:18px;background:#182242;display:flex;align-items:center;justify-content:center;font-size:26px;margin-bottom:15px}
+.placeholder p{color:var(--muted);max-width:500px;margin-top:7px}
+@media(max-width:850px){
+  .sidebar{width:60px}
+  .main{width:calc(100% - 60px);margin-left:60px;padding:14px}
+  .grid{grid-template-columns:1fr}
+  .hero{grid-template-columns:1fr}
+  .circle{margin-top:10px}
+  .week-title{min-width:130px}
+  .form-row,.form-row.two,.form-row.three{grid-template-columns:1fr}
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+
+<aside class="sidebar">
+  <div class="logo">J</div>
+  <nav class="sidebar-nav">
+    <button class="side-btn active" data-page="home" onclick="openPage('home',this)">⌂</button>
+    <button class="side-btn" data-page="routine" onclick="openPage('routine',this)">◷</button>
+    <button class="side-btn" data-page="habits" onclick="openPage('habits',this)">✓</button>
+    <button class="side-btn" data-page="studies" onclick="openPage('studies',this)">▣</button>
+    <button class="side-btn" data-page="projects" onclick="openPage('projects',this)">✦</button>
+    <button class="side-btn" data-page="hobbies" onclick="openPage('hobbies',this)">☕</button>
+    <button class="side-btn" data-page="goals" onclick="openPage('goals',this)">◈</button>
+    <button class="side-btn" data-page="stats" onclick="openPage('stats',this)">▤</button>
+    <button class="side-btn" data-page="review" onclick="openPage('review',this)">↺</button>
+    <button class="side-btn" data-page="notes" onclick="openPage('notes',this)">✎</button>
+  </nav>
+  <div class="profile">J</div>
+</aside>
+
+<main class="main">
+
+<header class="header">
+  <div>
+    <small>JAMILLY OS</small>
+    <h1>Olá, Jamilly.</h1>
+    <p id="currentDate"></p>
+  </div>
+  <div class="clock"><strong id="clock"></strong>horário local</div>
+</header>
+
+<div class="card search-wrap">
+  <input id="globalSearch" class="input" placeholder="Buscar em tudo (tarefas, hábitos, projetos, notas...)" oninput="runSearch()">
+  <div id="searchResults" class="search-results"></div>
+</div>
+
+<!-- ========================= DASHBOARD ========================= -->
+<section id="home" class="page active">
+<div class="grid">
+<main>
+
+  <div class="card hero">
+    <div>
+      <div class="label">Progresso de hoje</div>
+      <div class="xp"><span id="todayXP">0</span> XP</div>
+      <p class="muted">Seu progresso de hoje.</p>
+      <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+      <p class="muted" id="progressText" style="margin-top:8px">0 de 0 concluídas</p>
+    </div>
+    <div class="circle" id="progressCircle"><span id="percentage">0%</span></div>
+  </div>
+
+  <div class="card" style="margin-top:17px">
+    <div class="title-row"><h2 class="title">Sua constância</h2><span class="muted" style="font-size:11px">últimos 14 dias</span></div>
+    <div class="chart-wrap"><canvas id="consistencyChart"></canvas></div>
+  </div>
+
+  <div class="card" style="margin-top:17px">
+    <h2 class="title">Hoje na rotina</h2>
+    <div id="todayRoutine" class="routine-mini"></div>
+  </div>
+
+  <div class="card" style="margin-top:17px">
+    <h2 class="title">Tarefas de hoje</h2>
+    <div id="taskList"></div>
+    <div class="add">
+      <input id="taskInput" class="input" placeholder="Adicionar tarefa..." onkeydown="if(event.key==='Enter') addTask()">
+      <button class="btn" onclick="addTask()">+</button>
+    </div>
+    <p class="muted" style="font-size:11px;margin-top:9px">Adicionada aqui vira tarefa única. Clique em "Editar" para torná-la recorrente.</p>
+  </div>
+
+</main>
+<aside>
+
+  <div class="card">
+    <h2 class="title">Resumo</h2>
+    <div class="summary-grid">
+      <div class="summary"><small>Tarefas</small><strong id="taskSummary">0/0</strong></div>
+      <div class="summary"><small>XP hoje</small><strong id="xpSummary">0</strong></div>
+      <div class="summary"><small>Nível</small><strong id="levelSummary">1</strong></div>
+      <div class="summary"><small>XP total</small><strong id="totalXPSummary">0</strong></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:17px">
+    <h2 class="title">Lembretes</h2>
+    <div id="remindersList"></div>
+    <div class="add">
+      <input id="reminderInput" class="input" placeholder="Ex: comprar shampoo..." onkeydown="if(event.key==='Enter') addReminder()">
+      <select id="reminderCategory" class="input" style="max-width:110px">
+        <option>Lembrete</option><option>Comprar</option><option>Ligar</option><option>Resolver</option>
+      </select>
+      <button class="btn" onclick="addReminder()">+</button>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:17px">
+    <h2 class="title">Metas em destaque</h2>
+    <div id="goalsPreview"></div>
+  </div>
+
+  <div class="card" style="margin-top:17px">
+    <h2 class="title">Prioridades</h2>
+    <div class="priority"><span class="priority-number">01</span><span>Rotina, sono e energia</span></div>
+    <div class="priority"><span class="priority-number">02</span><span>Estudos</span></div>
+    <div class="priority"><span class="priority-number">03</span><span>Vida espiritual</span></div>
+  </div>
+
+</aside>
+</div>
+</section>
+
+<!-- ========================= ROTINA ========================= -->
+<section id="routine" class="page">
+<div class="card">
+  <div class="routine-top">
+    <div>
+      <div class="label">TIME BLOCKING</div>
+      <h2 style="font-size:23px;margin-top:5px">Rotina semanal</h2>
+      <p class="muted">Organize seus horários, com ou sem repetição.</p>
+    </div>
+    <div class="week-controls">
+      <button class="icon-btn" onclick="changeWeek(-1)">‹</button>
+      <div class="week-title" id="weekTitle"></div>
+      <button class="icon-btn" onclick="changeWeek(1)">›</button>
+    </div>
+  </div>
+
+  <div class="week" id="week"></div>
+  <div class="calendar-wrapper"><div class="calendar" id="calendar"></div></div>
+
+  <div class="add" style="margin-top:14px">
+    <input id="eventName" class="input" placeholder="Atividade" style="flex:2;min-width:160px">
+    <select id="eventArea" class="input" style="flex:1;min-width:120px"></select>
+    <input id="eventDate" class="input" type="date" style="flex:1;min-width:130px">
+    <select id="eventStart" class="input" style="flex:1;min-width:90px"></select>
+    <select id="eventEnd" class="input" style="flex:1;min-width:90px"></select>
+    <select id="eventRecurrence" class="input" style="flex:1;min-width:170px" onchange="toggleWeekdayPicker('eventWeekdays',this.value)">
+      <option value="none">Uma vez</option>
+      <option value="daily">Todos os dias</option>
+      <option value="weekdays">Dias úteis (seg–sex)</option>
+      <option value="weekly">Semanalmente (escolher dias)</option>
+    </select>
+    <button class="btn" onclick="addEvent()">Adicionar</button>
+  </div>
+  <div id="eventWeekdays" class="weekday-picker" style="display:none"></div>
+
+  <p class="muted" style="font-size:12px;margin-top:9px">Clique em um bloco para editar ou excluir a série toda.</p>
+</div>
+</section>
+
+<!-- ========================= HÁBITOS ========================= -->
+<section id="habits" class="page">
+  <div class="card">
+    <h2 class="title">Novo hábito</h2>
+    <div class="add">
+      <input id="habitInput" class="input" placeholder="Ex: Ler 20 minutos" onkeydown="if(event.key==='Enter') addHabit()">
+      <select id="habitArea" class="input" style="max-width:150px"></select>
+      <button class="btn" onclick="addHabit()">Adicionar</button>
+    </div>
+    <p class="muted" style="font-size:12px;margin-top:9px">Poucos hábitos bem marcados valem mais que muitos esquecidos — cinco já é um bom limite.</p>
+  </div>
+  <div class="card" style="margin-top:17px">
+    <h2 class="title">Hoje</h2>
+    <div id="habitsToday"></div>
+  </div>
+  <div class="card" style="margin-top:17px">
+    <div class="title-row"><h2 class="title">Constância dos hábitos</h2><span class="muted" style="font-size:11px">últimos 14 dias</span></div>
+    <div class="chart-wrap"><canvas id="habitsChart"></canvas></div>
+  </div>
+</section>
+
+<!-- ========================= ESTUDOS ========================= -->
+<section id="studies" class="page">
+  <div class="card">
+    <h2 class="title">Nova matéria</h2>
+    <div class="form-row">
+      <input id="subjectName" class="input" placeholder="Nome da matéria (ex: Redação)">
+      <input id="subjectTarget" class="input" type="number" min="0" step="0.5" placeholder="Meta semanal (horas)">
+      <select id="subjectArea" class="input"></select>
+      <button class="btn" onclick="addSubject()">Adicionar</button>
+    </div>
+  </div>
+  <div class="card" style="margin-top:17px">
+    <h2 class="title">Registrar sessão de estudo</h2>
+    <div class="form-row three">
+      <select id="sessionSubject" class="input"></select>
+      <input id="sessionMinutes" class="input" type="number" min="1" placeholder="Minutos estudados">
+      <input id="sessionDate" class="input" type="date">
+      <button class="btn" onclick="logSession()">Registrar</button>
+    </div>
+  </div>
+  <div class="card" style="margin-top:17px">
+    <div class="title-row"><h2 class="title">Matérias</h2><span class="muted" style="font-size:11px" id="studiesWeekTotal"></span></div>
+    <div id="subjectsList"></div>
+  </div>
+</section>
+
+<!-- ========================= PROJETOS ========================= -->
+<section id="projects" class="page">
+  <div class="card">
+    <h2 class="title">Novo projeto</h2>
+    <div class="form-row">
+      <input id="projectName" class="input" placeholder="Nome do projeto">
+      <select id="projectStatus" class="input"><option>Não iniciado</option><option>Em andamento</option><option>Concluído</option></select>
+      <select id="projectArea" class="input"></select>
+      <button class="btn" onclick="addProject()">Adicionar</button>
+    </div>
+  </div>
+  <div class="card" style="margin-top:17px">
+    <h2 class="title">Seus projetos</h2>
+    <div id="projectsList"></div>
+  </div>
+</section>
+
+<!-- ========================= HOBBIES ========================= -->
+<section id="hobbies" class="page">
+  <div class="card">
+    <h2 class="title">Hobbies</h2>
+    <p class="muted" style="font-size:13px;margin-bottom:12px">O que você pratica, quer praticar ou deixou de lado.</p>
+    <div class="form-row two">
+      <input id="hobbyName" class="input" placeholder="Ex: Natação, desenho, violão...">
+      <select id="hobbyStatus" class="input"><option>Praticando</option><option>Quero praticar</option><option>Não pratico mais</option></select>
+      <button class="btn" onclick="addHobby()">Adicionar</button>
+    </div>
+    <div id="hobbiesList" style="margin-top:14px"></div>
+  </div>
+  <div class="card" style="margin-top:17px">
+    <h2 class="title">Consumindo</h2>
+    <p class="muted" style="font-size:13px;margin-bottom:12px">Livros, mangás, filmes, séries e animes.</p>
+    <div class="form-row three">
+      <input id="mediaTitle" class="input" placeholder="Título">
+      <select id="mediaKind" class="input"><option>Livro/Mangá</option><option>Filme/Série/Anime</option></select>
+      <select id="mediaStatus" class="input"><option>Em andamento</option><option>Quero começar</option><option>Concluído</option></select>
+      <button class="btn" onclick="addMedia()">Adicionar</button>
+    </div>
+    <h3 style="font-size:13px;color:var(--muted);margin:16px 0 8px">Livros & Mangás</h3>
+    <div id="mediaBooksList"></div>
+    <h3 style="font-size:13px;color:var(--muted);margin:16px 0 8px">Filmes, Séries & Animes</h3>
+    <div id="mediaScreenList"></div>
+  </div>
+</section>
+
+<!-- ========================= METAS ========================= -->
+<section id="goals" class="page">
+  <div class="card">
+    <h2 class="title">Nova meta</h2>
+    <div class="form-group"><label>Título</label><input id="goalTitle" class="input" placeholder="Ex: Estudar redação toda semana"></div>
+    <div class="form-row">
+      <select id="goalType" class="input" onchange="updateGoalLinkField()">
+        <option value="manual">Meta manual</option>
+        <option value="subject">Vinculada a uma matéria</option>
+        <option value="project">Vinculada a um projeto</option>
+      </select>
+      <select id="goalLink" class="input" style="display:none"></select>
+      <select id="goalArea" class="input"></select>
+      <input id="goalDeadline" class="input" type="date">
+    </div>
+    <button class="btn" style="margin-top:9px" onclick="addGoal()">Adicionar meta</button>
+  </div>
+  <div class="card" style="margin-top:17px">
+    <h2 class="title">Suas metas</h2>
+    <div id="goalsList"></div>
+  </div>
+</section>
+
+<!-- ========================= ESTATÍSTICAS ========================= -->
+<section id="stats" class="page">
+  <div class="card">
+    <h2 class="title">Visão geral</h2>
+    <div class="stat-grid" id="statGrid"></div>
+  </div>
+  <div class="card" style="margin-top:17px">
+    <h2 class="title">Esta semana × semana passada</h2>
+    <div id="statCompare"></div>
+  </div>
+  <div class="card" style="margin-top:17px">
+    <h2 class="title">Por área (esta semana)</h2>
+    <div id="statAreas"></div>
+  </div>
+</section>
+
+<!-- ========================= REVISÃO SEMANAL ========================= -->
+<section id="review" class="page">
+  <div class="card">
+    <h2 class="title">Nova revisão</h2>
+    <p class="muted" style="font-size:12px;margin-bottom:10px" id="reviewWeekInfo"></p>
+    <div class="form-group"><label>O que consegui fazer?</label><textarea id="reviewDid" class="input" rows="3"></textarea></div>
+    <div class="form-group"><label>O que ficou pendente?</label><textarea id="reviewPending" class="input" rows="3"></textarea></div>
+    <div class="form-group"><label>O que funcionou?</label><textarea id="reviewWorked" class="input" rows="2"></textarea></div>
+    <div class="form-group"><label>O que atrapalhou?</label><textarea id="reviewHindered" class="input" rows="2"></textarea></div>
+    <div class="form-group"><label>3 prioridades da próxima semana</label><textarea id="reviewPriorities" class="input" rows="3"></textarea></div>
+    <button class="btn" onclick="addReview()">Salvar revisão</button>
+  </div>
+  <div class="card" style="margin-top:17px">
+    <h2 class="title">Revisões anteriores</h2>
+    <div id="reviewsList"></div>
+  </div>
+</section>
+
+<!-- ========================= NOTAS ========================= -->
+<section id="notes" class="page">
+  <div class="card">
+    <h2 class="title">Nova nota</h2>
+    <div class="form-group"><input id="noteTitle" class="input" placeholder="Título"></div>
+    <div class="form-group"><textarea id="noteContent" class="input" rows="4" placeholder="Ideias de vídeo, pensamentos, anotações..."></textarea></div>
+    <button class="btn" onclick="addNote()">Salvar nota</button>
+  </div>
+  <div class="card" style="margin-top:17px">
+    <h2 class="title">Suas notas</h2>
+    <div id="notesList"></div>
+  </div>
+</section>
+
+</main>
+</div>
+
+<!-- MODAL DE TAREFA -->
+<div class="modal" id="taskModal">
+<div class="modal-box">
+<h2>Editar tarefa</h2>
+<div class="form-group"><label>Nome</label><input id="editTaskName" class="input"></div>
+<div class="form-group"><label>Horário</label><input id="editTaskTime" class="input" type="time"></div>
+<div class="form-group"><label>Área</label><select id="editTaskArea" class="input"></select></div>
+<div class="form-group"><label>Repetição</label>
+  <select id="editTaskRecurrence" class="input" onchange="toggleWeekdayPicker('editTaskWeekdays',this.value)">
+    <option value="none">Uma vez</option>
+    <option value="daily">Todos os dias</option>
+    <option value="weekdays">Dias úteis (seg–sex)</option>
+    <option value="weekly">Semanalmente (escolher dias)</option>
+  </select>
+</div>
+<div id="editTaskWeekdays" class="weekday-picker" style="display:none"></div>
+<div class="modal-actions">
+<button class="small-btn" onclick="deleteTaskTemplate(editingTaskId)">Excluir</button>
+<button class="small-btn" onclick="closeModal('taskModal')">Cancelar</button>
+<button class="btn" onclick="saveTaskEdit()">Salvar</button>
+</div>
+</div>
+</div>
+
+<!-- MODAL DE EVENTO -->
+<div class="modal" id="eventModal">
+<div class="modal-box">
+<h2>Editar bloco</h2>
+<div class="form-group"><label>Atividade</label><input id="editEventName" class="input"></div>
+<div class="form-group"><label>Área</label><select id="editEventArea" class="input"></select></div>
+<div class="form-group"><label>Data</label><input id="editEventDate" class="input" type="date"></div>
+<div class="form-group"><label>Horário inicial</label><select id="editEventStart" class="input"></select></div>
+<div class="form-group"><label>Horário final</label><select id="editEventEnd" class="input"></select></div>
+<div class="form-group"><label>Repetição</label>
+  <select id="editEventRecurrence" class="input" onchange="toggleWeekdayPicker('editEventWeekdays',this.value)">
+    <option value="none">Uma vez</option>
+    <option value="daily">Todos os dias</option>
+    <option value="weekdays">Dias úteis (seg–sex)</option>
+    <option value="weekly">Semanalmente (escolher dias)</option>
+  </select>
+</div>
+<div id="editEventWeekdays" class="weekday-picker" style="display:none"></div>
+<div class="modal-actions">
+<button class="small-btn" onclick="deleteEditingEvent()">Excluir série</button>
+<button class="small-btn" onclick="closeModal('eventModal')">Cancelar</button>
+<button class="btn" onclick="saveEventEdit()">Salvar</button>
+</div>
+</div>
+</div>
+
+<!-- MODAL DE MATÉRIA -->
+<div class="modal" id="subjectModal">
+<div class="modal-box">
+<h2>Editar matéria</h2>
+<div class="form-group"><label>Nome</label><input id="editSubjectName" class="input"></div>
+<div class="form-group"><label>Meta semanal (horas)</label><input id="editSubjectTarget" class="input" type="number" min="0" step="0.5"></div>
+<div class="form-group"><label>Área</label><select id="editSubjectArea" class="input"></select></div>
+<div class="modal-actions">
+<button class="small-btn" onclick="deleteEditingSubject()">Excluir</button>
+<button class="small-btn" onclick="closeModal('subjectModal')">Cancelar</button>
+<button class="btn" onclick="saveSubjectEdit()">Salvar</button>
+</div>
+</div>
+</div>
+
+<!-- MODAL DE PROJETO -->
+<div class="modal" id="projectModal">
+<div class="modal-box">
+<h2>Editar projeto</h2>
+<div class="form-group"><label>Nome</label><input id="editProjectName" class="input"></div>
+<div class="form-group"><label>Status</label><select id="editProjectStatus" class="input"><option>Não iniciado</option><option>Em andamento</option><option>Concluído</option></select></div>
+<div class="form-group"><label>Área</label><select id="editProjectArea" class="input"></select></div>
+<div class="modal-actions">
+<button class="small-btn" onclick="deleteEditingProject()">Excluir</button>
+<button class="small-btn" onclick="closeModal('projectModal')">Cancelar</button>
+<button class="btn" onclick="saveProjectEdit()">Salvar</button>
+</div>
+</div>
+</div>
+
+<!-- MODAL GENÉRICO (hábito, hobby, mídia, lembrete, meta, nota) -->
+<div class="modal" id="entityModal">
+<div class="modal-box">
+<h2 id="entityModalTitle">Editar</h2>
+<div class="form-group" id="entityNameGroup"><label id="entityNameLabel">Nome</label><input id="entityName" class="input"></div>
+<div class="form-group" id="entityTextGroup" style="display:none"><label>Conteúdo</label><textarea id="entityText" class="input" rows="6"></textarea></div>
+<div class="form-group" id="entitySelect1Group" style="display:none"><label id="entitySelect1Label">Status</label><select id="entitySelect1" class="input"></select></div>
+<div class="form-group" id="entitySelect2Group" style="display:none"><label id="entitySelect2Label">Tipo</label><select id="entitySelect2" class="input"></select></div>
+<div class="form-group" id="entityDateGroup" style="display:none"><label id="entityDateLabel">Data</label><input id="entityDate" class="input" type="date"></div>
+<div class="modal-actions">
+<button class="small-btn" onclick="deleteEntityEdit()">Excluir</button>
+<button class="small-btn" onclick="closeModal('entityModal')">Cancelar</button>
+<button class="btn" onclick="saveEntityEdit()">Salvar</button>
+</div>
+</div>
+</div>
+
+<script>
+
+/* =========================================================
+   CHAVES DE ARMAZENAMENTO
+========================================================= */
+
+const STORAGE_TASKS_OLD = "jamilly_os_tasks_v3";
+const STORAGE_EVENTS_OLD = "jamilly_os_events_v3";
+const STORAGE_TOTAL_XP_OLD = "jamilly_os_total_xp_v3";
+
+const STORAGE_TASKTEMPLATES = "jamilly_os_tasktemplates_v1";
+const STORAGE_TASKCOMPLETIONS = "jamilly_os_taskcompletions_v1";
+const STORAGE_EVENTTEMPLATES = "jamilly_os_eventtemplates_v1";
+const STORAGE_XPLEDGER = "jamilly_os_xpledger_v1";
+
+const STORAGE_SUBJECTS = "jamilly_os_subjects_v1";
+const STORAGE_SESSIONS = "jamilly_os_sessions_v1";
+const STORAGE_PROJECTS = "jamilly_os_projects_v1";
+const STORAGE_GOALS = "jamilly_os_goals_v1";
+const STORAGE_REMINDERS = "jamilly_os_reminders_v1";
+const STORAGE_HABITLIST = "jamilly_os_habitlist_v1";
+const STORAGE_HABITLOGS = "jamilly_os_habitlogs_v1";
+const STORAGE_HOBBIES = "jamilly_os_hobbies_v1";
+const STORAGE_MEDIA = "jamilly_os_media_v1";
+const STORAGE_REVIEWS = "jamilly_os_reviews_v1";
+const STORAGE_NOTES = "jamilly_os_notes_v1";
+
+const AREA_LIST = ["Espiritual","Saúde","Estudos","YouTube","Casa","Pessoal","Lazer"];
+const dayNames=["SEG","TER","QUA","QUI","SEX","SÁB","DOM"];
+
+/* =========================================================
+   DATAS
+========================================================= */
+
+function dateKey(date){
+  const y=date.getFullYear(), m=String(date.getMonth()+1).padStart(2,"0"), d=String(date.getDate()).padStart(2,"0");
+  return `${y}-${m}-${d}`;
+}
+function parseDate(key){ const [y,m,d]=key.split("-").map(Number); return new Date(y,m-1,d); }
+function startOfWeek(date){
+  const d=new Date(date), day=d.getDay(), diff = day===0 ? -6 : 1-day;
+  d.setDate(d.getDate()+diff); d.setHours(0,0,0,0); return d;
+}
+function formatDate(date){ return date.toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit",year:"numeric"}); }
+function formatDateShort(date){ return date.toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit"}); }
+function weekdayIndex(date){ return (date.getDay()+6)%7; } // 0=SEG..6=DOM
+
+/* =========================================================
+   ESTADO
+========================================================= */
+
+let today = new Date();
+let selectedWeek = startOfWeek(today);
+let selectedDate = dateKey(today);
+let editingTaskId = null;
+let editingEventId = null;
+let editingSubjectId = null;
+let editingProjectId = null;
+let editingEntity = { type:null, id:null };
+
+// migração de tarefas (v3 -> modelos com recorrência)
+let taskTemplates = JSON.parse(localStorage.getItem(STORAGE_TASKTEMPLATES) || "null");
+let taskCompletions = JSON.parse(localStorage.getItem(STORAGE_TASKCOMPLETIONS) || "null");
+if(taskTemplates===null){
+  taskTemplates = [];
+  taskCompletions = {};
+  const oldTasks = JSON.parse(localStorage.getItem(STORAGE_TASKS_OLD) || "{}");
+  Object.keys(oldTasks).forEach(dateStr=>{
+    (oldTasks[dateStr]||[]).forEach(old=>{
+      const id = old.id || (Date.now()+Math.floor(Math.random()*100000));
+      taskTemplates.push({ id, name:old.name, time:old.time||"", area:"", recurrence:"none", days:[], startDate:dateStr, xp:old.xp||10 });
+      if(old.done){
+        if(!taskCompletions[dateStr]) taskCompletions[dateStr]=[];
+        taskCompletions[dateStr].push(id);
+      }
+    });
+  });
+} else if(taskCompletions===null){ taskCompletions = {}; }
+
+// migração de eventos
+let eventTemplates = JSON.parse(localStorage.getItem(STORAGE_EVENTTEMPLATES) || "null");
+if(eventTemplates===null){
+  const oldEvents = JSON.parse(localStorage.getItem(STORAGE_EVENTS_OLD) || "[]");
+  eventTemplates = oldEvents.map(e=>({ id:e.id, name:e.name, date:e.date, start:e.start, end:e.end, area:"", recurrence:"none", days:[] }));
+}
+
+// migração de XP
+let xpLedger = JSON.parse(localStorage.getItem(STORAGE_XPLEDGER) || "null");
+if(xpLedger===null){
+  xpLedger = {};
+  const oldTotal = Number(localStorage.getItem(STORAGE_TOTAL_XP_OLD) || 0);
+  if(oldTotal>0) xpLedger["legacy_xp"] = { amount: oldTotal, date:"1900-01-01" };
+}
+
+let subjects = JSON.parse(localStorage.getItem(STORAGE_SUBJECTS) || "[]");
+let sessions = JSON.parse(localStorage.getItem(STORAGE_SESSIONS) || "[]");
+let projects = JSON.parse(localStorage.getItem(STORAGE_PROJECTS) || "[]");
+let goals = JSON.parse(localStorage.getItem(STORAGE_GOALS) || "[]");
+let reminders = JSON.parse(localStorage.getItem(STORAGE_REMINDERS) || "[]");
+let habitList = JSON.parse(localStorage.getItem(STORAGE_HABITLIST) || "[]");
+let habitLogs = JSON.parse(localStorage.getItem(STORAGE_HABITLOGS) || "{}");
+let hobbies = JSON.parse(localStorage.getItem(STORAGE_HOBBIES) || "[]");
+let media = JSON.parse(localStorage.getItem(STORAGE_MEDIA) || "[]");
+let reviews = JSON.parse(localStorage.getItem(STORAGE_REVIEWS) || "[]");
+let notes = JSON.parse(localStorage.getItem(STORAGE_NOTES) || "[]");
+
+/* =========================================================
+   SALVAMENTO
+========================================================= */
+
+function saveTasks(){
+  localStorage.setItem(STORAGE_TASKTEMPLATES, JSON.stringify(taskTemplates));
+  localStorage.setItem(STORAGE_TASKCOMPLETIONS, JSON.stringify(taskCompletions));
+}
+function saveEvents(){ localStorage.setItem(STORAGE_EVENTTEMPLATES, JSON.stringify(eventTemplates)); }
+function saveXP(){ localStorage.setItem(STORAGE_XPLEDGER, JSON.stringify(xpLedger)); }
+function saveStudies(){
+  localStorage.setItem(STORAGE_SUBJECTS, JSON.stringify(subjects));
+  localStorage.setItem(STORAGE_SESSIONS, JSON.stringify(sessions));
+}
+function saveProjects(){ localStorage.setItem(STORAGE_PROJECTS, JSON.stringify(projects)); }
+function saveGoals(){ localStorage.setItem(STORAGE_GOALS, JSON.stringify(goals)); }
+function saveReminders(){ localStorage.setItem(STORAGE_REMINDERS, JSON.stringify(reminders)); }
+function saveHabits(){
+  localStorage.setItem(STORAGE_HABITLIST, JSON.stringify(habitList));
+  localStorage.setItem(STORAGE_HABITLOGS, JSON.stringify(habitLogs));
+}
+function saveHobbies(){ localStorage.setItem(STORAGE_HOBBIES, JSON.stringify(hobbies)); }
+function saveMedia(){ localStorage.setItem(STORAGE_MEDIA, JSON.stringify(media)); }
+function saveReviews(){ localStorage.setItem(STORAGE_REVIEWS, JSON.stringify(reviews)); }
+function saveNotes(){ localStorage.setItem(STORAGE_NOTES, JSON.stringify(notes)); }
+
+function escapeHTML(text){
+  return String(text).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
+}
+function areaOptionsHTML(selected){
+  return `<option value="">Sem área</option>` + AREA_LIST.map(a=>`<option ${a===selected?"selected":""}>${a}</option>`).join("");
+}
+function areaBadge(area){ return area ? `<span class="badge pink">${escapeHTML(area)}</span>` : ""; }
+
+/* =========================================================
+   XP (livro-razão)
+========================================================= */
+
+function grantXP(key, amount, date){
+  if(xpLedger[key]) return;
+  xpLedger[key] = { amount, date };
+  saveXP();
+}
+function revokeXP(key){
+  if(!xpLedger[key]) return;
+  delete xpLedger[key];
+  saveXP();
+}
+function totalXP(){ return Object.values(xpLedger).reduce((s,e)=>s+e.amount,0); }
+function xpForDate(dateStr){ return Object.values(xpLedger).filter(e=>e.date===dateStr).reduce((s,e)=>s+e.amount,0); }
+function xpForRange(start,end){
+  return Object.values(xpLedger).filter(e=>{
+    if(e.date==="1900-01-01") return false;
+    const d=parseDate(e.date); return d>=start && d<=end;
+  }).reduce((s,e)=>s+e.amount,0);
+}
+
+/* =========================================================
+   TAREFAS (com recorrência)
+========================================================= */
+
+function recurrenceLabel(r){
+  return r==="daily" ? "Diária" : r==="weekdays" ? "Dias úteis" : r==="weekly" ? "Semanal" : "";
+}
+function occursOn(template, date){
+  if(date < parseDate(template.startDate || template.date)) return false;
+  const wd = weekdayIndex(date);
+  if(template.recurrence==="none") return dateKey(date)===(template.startDate||template.date);
+  if(template.recurrence==="daily") return true;
+  if(template.recurrence==="weekdays") return wd<=4;
+  if(template.recurrence==="weekly") return (template.days||[]).includes(wd);
+  return false;
+}
+function getTasksForDate(dateStr){
+  const d = parseDate(dateStr);
+  return taskTemplates.filter(t=>occursOn(t,d)).map(t=>({
+    template:t, done:(taskCompletions[dateStr]||[]).includes(t.id)
+  }));
+}
+function addTask(){
+  const input = document.getElementById("taskInput");
+  const name = input.value.trim();
+  if(!name) return;
+  taskTemplates.push({ id:Date.now(), name, time:"", area:"", recurrence:"none", days:[], startDate:dateKey(today), xp:10 });
+  input.value="";
+  saveTasks();
+  renderTasks();
+  renderConsistencyChart();
+}
+function toggleTaskOcc(templateId, dateStr){
+  const template = taskTemplates.find(t=>t.id===templateId);
+  if(!template) return;
+  if(!taskCompletions[dateStr]) taskCompletions[dateStr]=[];
+  const idx = taskCompletions[dateStr].indexOf(templateId);
+  const key = `taskocc_${templateId}_${dateStr}`;
+  if(idx>=0){ taskCompletions[dateStr].splice(idx,1); revokeXP(key); }
+  else { taskCompletions[dateStr].push(templateId); grantXP(key, template.xp||10, dateStr); }
+  saveTasks();
+  renderTasks();
+  renderConsistencyChart();
+}
+function editTaskTemplate(id){
+  const template = taskTemplates.find(t=>t.id===id);
+  if(!template) return;
+  editingTaskId = id;
+  document.getElementById("editTaskName").value = template.name;
+  document.getElementById("editTaskTime").value = template.time||"";
+  document.getElementById("editTaskArea").innerHTML = areaOptionsHTML(template.area);
+  document.getElementById("editTaskRecurrence").value = template.recurrence||"none";
+  toggleWeekdayPicker("editTaskWeekdays", template.recurrence);
+  setWeekdayCheckboxes("editTaskWeekdays", template.days||[]);
+  document.getElementById("taskModal").classList.add("show");
+}
+function saveTaskEdit(){
+  const template = taskTemplates.find(t=>t.id===editingTaskId);
+  if(!template) return;
+  const name = document.getElementById("editTaskName").value.trim();
+  if(!name){ alert("A tarefa precisa ter um nome."); return; }
+  template.name = name;
+  template.time = document.getElementById("editTaskTime").value;
+  template.area = document.getElementById("editTaskArea").value;
+  template.recurrence = document.getElementById("editTaskRecurrence").value;
+  template.days = getSelectedWeekdays("editTaskWeekdays");
+  saveTasks();
+  closeModal("taskModal");
+  renderTasks();
+  renderConsistencyChart();
+}
+function deleteTaskTemplate(id){
+  if(!confirm("Excluir esta tarefa? Se ela se repete, o histórico já registrado é mantido.")) return;
+  const template = taskTemplates.find(t=>t.id===id);
+  if(template && template.recurrence==="none"){
+    revokeXP(`taskocc_${id}_${template.startDate}`);
+  }
+  taskTemplates = taskTemplates.filter(t=>t.id!==id);
+  saveTasks();
+  closeModal("taskModal");
+  renderTasks();
+  renderConsistencyChart();
+}
+function renderTasks(){
+  const list = document.getElementById("taskList");
+  const dateStr = dateKey(today);
+  const occ = getTasksForDate(dateStr).sort((a,b)=>(a.template.time||"99:99").localeCompare(b.template.time||"99:99"));
+  list.innerHTML="";
+  if(occ.length===0){ list.innerHTML = `<p class="muted" style="padding:10px 0">Nenhuma tarefa para hoje.</p>`; }
+  occ.forEach(({template,done})=>{
+    const row = document.createElement("div");
+    row.className = "task " + (done?"done":"");
+    row.innerHTML = `
+      <input type="checkbox" ${done?"checked":""} onchange="toggleTaskOcc(${template.id},'${dateStr}')">
+      <span class="task-time">${template.time||"—"}</span>
+      <span class="task-name">${escapeHTML(template.name)}</span>
+      ${areaBadge(template.area)}
+      ${template.recurrence!=="none" ? `<span class="badge blue">${recurrenceLabel(template.recurrence)}</span>` : ""}
+      <div class="task-actions">
+        <button class="small-btn" onclick="editTaskTemplate(${template.id})">Editar</button>
+        <button class="small-btn" onclick="deleteTaskTemplate(${template.id})">×</button>
+      </div>
+    `;
+    list.appendChild(row);
+  });
+  updateProgress();
+}
+function updateProgress(){
+  const dateStr = dateKey(today);
+  const occ = getTasksForDate(dateStr);
+  const total = occ.length, completed = occ.filter(o=>o.done).length;
+  const xp = xpForDate(dateStr);
+  const percentage = total ? Math.round(completed/total*100) : 0;
+  const level = Math.floor(totalXP()/100)+1;
+
+  document.getElementById("todayXP").textContent = xp;
+  document.getElementById("xpSummary").textContent = xp;
+  document.getElementById("totalXPSummary").textContent = totalXP();
+  document.getElementById("levelSummary").textContent = level;
+  document.getElementById("taskSummary").textContent = `${completed}/${total}`;
+  document.getElementById("percentage").textContent = percentage+"%";
+  document.getElementById("progressText").textContent = `${completed} de ${total} concluídas`;
+  document.getElementById("progressBar").style.width = percentage+"%";
+  const degrees = percentage*3.6;
+  document.getElementById("progressCircle").style.background = `conic-gradient(var(--primary) ${degrees}deg, #29345b ${degrees}deg)`;
+}
+
+/* =========================================================
+   SELETOR DE DIAS DA SEMANA (reaproveitado por tarefas e eventos)
+========================================================= */
+
+function renderWeekdayPicker(containerId){
+  const container = document.getElementById(containerId);
+  container.innerHTML = dayNames.map((name,i)=>`<label><input type="checkbox" value="${i}">${name}</label>`).join("");
+}
+function getSelectedWeekdays(containerId){
+  return Array.from(document.querySelectorAll(`#${containerId} input:checked`)).map(el=>Number(el.value));
+}
+function setWeekdayCheckboxes(containerId, days){
+  document.querySelectorAll(`#${containerId} input`).forEach(el=>{ el.checked = days.includes(Number(el.value)); });
+}
+function toggleWeekdayPicker(containerId, recurrence){
+  document.getElementById(containerId).style.display = recurrence==="weekly" ? "flex" : "none";
+}
+
+/* =========================================================
+   MODAIS
+========================================================= */
+
+function closeModal(id){ document.getElementById(id).classList.remove("show"); }
+
+/* =========================================================
+   HORÁRIOS
+========================================================= */
+
+function populateTimes(){
+  ["eventStart","eventEnd","editEventStart","editEventEnd"].forEach(id=>{
+    const select = document.getElementById(id);
+    select.innerHTML="";
+    for(let h=5;h<=23;h++){
+      for(const min of [0,30]){
+        const value = String(h).padStart(2,"0")+":"+String(min).padStart(2,"0");
+        const option = document.createElement("option");
+        option.value=value; option.textContent=value;
+        select.appendChild(option);
+      }
+    }
+  });
+}
+function timeToMinutes(time){ const [h,m]=time.split(":").map(Number); return h*60+m; }
+
+/* =========================================================
+   SEMANA / ROTINA
+========================================================= */
+
+function changeWeek(amount){
+  selectedWeek = new Date(selectedWeek);
+  selectedWeek.setDate(selectedWeek.getDate()+(amount*7));
+  selectedDate = dateKey(selectedWeek);
+  renderCalendar();
+}
+function renderWeek(){
+  const container = document.getElementById("week");
+  container.innerHTML="";
+  const first = new Date(selectedWeek);
+  const last = new Date(selectedWeek); last.setDate(last.getDate()+6);
+  document.getElementById("weekTitle").textContent = `${formatDate(first)} — ${formatDate(last)}`;
+  for(let i=0;i<7;i++){
+    const date = new Date(first); date.setDate(date.getDate()+i);
+    const key = dateKey(date);
+    const button = document.createElement("button");
+    button.className="day";
+    if(key===dateKey(today)) button.classList.add("today");
+    if(key===selectedDate) button.classList.add("selected");
+    button.innerHTML = `<strong>${dayNames[i]}</strong><span>${date.getDate()}</span>`;
+    button.onclick = ()=>{ selectedDate=key; renderWeek(); updateEventFormDate(); };
+    container.appendChild(button);
+  }
+}
+function getEventsForDate(dateStr){
+  const d = parseDate(dateStr);
+  return eventTemplates.filter(e=>occursOn(e,d));
+}
+function hasOverlap(dateStr, start, end, excludeId){
+  return getEventsForDate(dateStr).some(e=>{
+    if(e.id===excludeId) return false;
+    return timeToMinutes(start) < timeToMinutes(e.end) && timeToMinutes(end) > timeToMinutes(e.start);
+  });
+}
+function renderCalendar(){
+  renderWeek();
+  updateEventFormDate();
+  const calendar = document.getElementById("calendar");
+  calendar.innerHTML = `<div class="calendar-head">HORA</div>`;
+  for(let i=0;i<7;i++){
+    const date = new Date(selectedWeek); date.setDate(date.getDate()+i);
+    calendar.innerHTML += `<div class="calendar-head">${dayNames[i]}<br>${date.getDate()}/${date.getMonth()+1}</div>`;
+  }
+  for(let hour=5;hour<=23;hour++){
+    calendar.innerHTML += `<div class="hour">${String(hour).padStart(2,"0")}:00</div>`;
+    for(let day=0;day<7;day++){
+      const slot = document.createElement("div");
+      slot.className="slot";
+      const date = new Date(selectedWeek); date.setDate(date.getDate()+day);
+      const key = dateKey(date);
+      const dayEvents = getEventsForDate(key).filter(e=>timeToMinutes(e.start)>=hour*60 && timeToMinutes(e.start)<hour*60+60);
+      dayEvents.forEach(event=>{
+        const element = document.createElement("div");
+        element.className="event";
+        const duration = timeToMinutes(event.end)-timeToMinutes(event.start);
+        element.style.height = Math.max(42,duration*.82)+"px";
+        element.innerHTML = `${escapeHTML(event.name)}<small>${event.start} — ${event.end}</small>`;
+        element.onclick = ()=> editEvent(event.id);
+        slot.appendChild(element);
+      });
+      calendar.appendChild(slot);
+    }
+  }
+}
+function updateEventFormDate(){ document.getElementById("eventDate").value = selectedDate; }
+function addEvent(){
+  const name = document.getElementById("eventName").value.trim();
+  const area = document.getElementById("eventArea").value;
+  const date = document.getElementById("eventDate").value;
+  const start = document.getElementById("eventStart").value;
+  const end = document.getElementById("eventEnd").value;
+  const recurrence = document.getElementById("eventRecurrence").value;
+  const days = getSelectedWeekdays("eventWeekdays");
+
+  if(!name){ alert("Digite o nome da atividade."); return; }
+  if(!date){ alert("Escolha uma data."); return; }
+  if(timeToMinutes(end)<=timeToMinutes(start)){ alert("O horário final precisa ser depois do inicial."); return; }
+  if(recurrence==="weekly" && days.length===0){ alert("Escolha ao menos um dia da semana."); return; }
+  if(hasOverlap(date,start,end,null)){
+    if(!confirm("Esse horário conflita com outro bloco nesse dia. Adicionar mesmo assim?")) return;
+  }
+
+  eventTemplates.push({ id:Date.now(), name, area, date, start, end, recurrence, days });
+  document.getElementById("eventName").value="";
+  saveEvents();
+  renderCalendar();
+  renderTodayRoutine();
+}
+function editEvent(id){
+  const event = eventTemplates.find(e=>e.id===id);
+  if(!event) return;
+  editingEventId = id;
+  document.getElementById("editEventName").value = event.name;
+  document.getElementById("editEventArea").innerHTML = areaOptionsHTML(event.area);
+  document.getElementById("editEventDate").value = event.date;
+  document.getElementById("editEventStart").value = event.start;
+  document.getElementById("editEventEnd").value = event.end;
+  document.getElementById("editEventRecurrence").value = event.recurrence||"none";
+  toggleWeekdayPicker("editEventWeekdays", event.recurrence);
+  setWeekdayCheckboxes("editEventWeekdays", event.days||[]);
+  document.getElementById("eventModal").classList.add("show");
+}
+function saveEventEdit(){
+  const event = eventTemplates.find(e=>e.id===editingEventId);
+  if(!event) return;
+  const name = document.getElementById("editEventName").value.trim();
+  const date = document.getElementById("editEventDate").value;
+  const start = document.getElementById("editEventStart").value;
+  const end = document.getElementById("editEventEnd").value;
+  if(!name){ alert("A atividade precisa ter um nome."); return; }
+  if(timeToMinutes(end)<=timeToMinutes(start)){ alert("O horário final precisa ser depois do inicial."); return; }
+  event.name=name; event.area=document.getElementById("editEventArea").value;
+  event.date=date; event.start=start; event.end=end;
+  event.recurrence = document.getElementById("editEventRecurrence").value;
+  event.days = getSelectedWeekdays("editEventWeekdays");
+  saveEvents();
+  closeModal("eventModal");
+  renderCalendar();
+  renderTodayRoutine();
+}
+function deleteEditingEvent(){
+  if(editingEventId===null) return;
+  if(!confirm("Excluir este bloco (e toda a repetição, se houver)?")) return;
+  eventTemplates = eventTemplates.filter(e=>e.id!==editingEventId);
+  editingEventId=null;
+  saveEvents();
+  closeModal("eventModal");
+  renderCalendar();
+  renderTodayRoutine();
+}
+function renderTodayRoutine(){
+  const container = document.getElementById("todayRoutine");
+  const key = dateKey(today);
+  const todays = getEventsForDate(key).sort((a,b)=>timeToMinutes(a.start)-timeToMinutes(b.start));
+  if(todays.length===0){ container.innerHTML = `<p class="routine-mini-empty">Nenhum bloco marcado para hoje.</p>`; return; }
+  container.innerHTML = todays.map(e=>`
+    <div class="routine-mini-item">
+      <span class="rtime">${e.start} – ${e.end}</span>
+      <span>${escapeHTML(e.name)}</span>
+      ${areaBadge(e.area)}
+    </div>
+  `).join("");
+}
+
+/* =========================================================
+   GRÁFICO DE LINHA (canvas, sem dependências)
+========================================================= */
+
+function drawLineChart(canvas, labels, values){
+  const ctx = canvas.getContext("2d");
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width*dpr; canvas.height = rect.height*dpr;
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  const w=rect.width,h=rect.height, padL=30,padR=8,padT=12,padB=20;
+  const chartW=w-padL-padR, chartH=h-padT-padB;
+  ctx.clearRect(0,0,w,h);
+  ctx.strokeStyle="#1c2547"; ctx.lineWidth=1;
+  [0,25,50,75,100].forEach(val=>{
+    const y = padT+chartH-(val/100)*chartH;
+    ctx.beginPath(); ctx.moveTo(padL,y); ctx.lineTo(w-padR,y); ctx.stroke();
+    ctx.fillStyle="#65709a"; ctx.font="9px system-ui"; ctx.fillText(val+"%",2,y+3);
+  });
+  if(values.length===0) return;
+  const stepX = values.length>1 ? chartW/(values.length-1) : 0;
+  ctx.beginPath();
+  values.forEach((val,i)=>{
+    const x=padL+stepX*i, y=padT+chartH-(val/100)*chartH;
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  });
+  ctx.strokeStyle="#6978ff"; ctx.lineWidth=2.5; ctx.lineJoin="round"; ctx.stroke();
+  ctx.lineTo(padL+stepX*(values.length-1),padT+chartH);
+  ctx.lineTo(padL,padT+chartH); ctx.closePath();
+  ctx.fillStyle="rgba(105,120,255,0.12)"; ctx.fill();
+  values.forEach((val,i)=>{
+    const x=padL+stepX*i, y=padT+chartH-(val/100)*chartH;
+    ctx.beginPath(); ctx.arc(x,y,3,0,Math.PI*2); ctx.fillStyle="#40d8b0"; ctx.fill();
+  });
+  ctx.fillStyle="#65709a"; ctx.font="9px system-ui";
+  const skip = Math.ceil(labels.length/7);
+  labels.forEach((label,i)=>{
+    if(i%skip!==0 && i!==labels.length-1) return;
+    ctx.fillText(label, padL+stepX*i-12, h-4);
+  });
+}
+function getConsistencyData(days){
+  const labels=[], values=[];
+  for(let i=days-1;i>=0;i--){
+    const d=new Date(today); d.setDate(d.getDate()-i);
+    const key=dateKey(d);
+    const occ=getTasksForDate(key);
+    const pct = occ.length ? Math.round(occ.filter(o=>o.done).length/occ.length*100) : 0;
+    labels.push(formatDateShort(d)); values.push(pct);
+  }
+  return {labels,values};
+}
+function renderConsistencyChart(){
+  const canvas = document.getElementById("consistencyChart");
+  if(!canvas) return;
+  const {labels,values} = getConsistencyData(14);
+  drawLineChart(canvas, labels, values);
+}
+
+/* =========================================================
+   LEMBRETES
+========================================================= */
+
+function addReminder(){
+  const input = document.getElementById("reminderInput");
+  const text = input.value.trim();
+  const category = document.getElementById("reminderCategory").value;
+  if(!text) return;
+  reminders.push({ id:Date.now(), text, category, done:false });
+  input.value="";
+  saveReminders();
+  renderReminders();
+}
+function toggleReminder(id){
+  const reminder = reminders.find(r=>r.id===id);
+  if(!reminder) return;
+  reminder.done = !reminder.done;
+  saveReminders();
+  renderReminders();
+}
+function reminderBadgeClass(category){
+  if(category==="Comprar") return "yellow";
+  if(category==="Ligar") return "blue";
+  if(category==="Resolver") return "purple";
+  return "";
+}
+function renderReminders(){
+  const list = document.getElementById("remindersList");
+  if(!list) return;
+  if(reminders.length===0){ list.innerHTML = `<p class="empty-hint">Nenhum lembrete por aqui.</p>`; return; }
+  const sorted = [...reminders].sort((a,b)=>a.done-b.done);
+  list.innerHTML = sorted.map(r=>`
+    <div class="task ${r.done?"done":""}">
+      <input type="checkbox" ${r.done?"checked":""} onchange="toggleReminder(${r.id})">
+      <span class="badge ${reminderBadgeClass(r.category)}">${r.category}</span>
+      <span class="task-name">${escapeHTML(r.text)}</span>
+      <div class="task-actions"><button class="small-btn" onclick="openEntityEdit('reminder',${r.id})">Editar</button></div>
+    </div>
+  `).join("");
+}
+
+/* =========================================================
+   HÁBITOS
+========================================================= */
+
+function addHabit(){
+  const input = document.getElementById("habitInput");
+  const name = input.value.trim();
+  const area = document.getElementById("habitArea").value;
+  if(!name) return;
+  if(habitList.length>=5){
+    if(!confirm("Você já tem 5 hábitos — manter poucos ajuda na constância. Quer adicionar mesmo assim?")) return;
+  }
+  habitList.push({ id:Date.now(), name, area });
+  input.value="";
+  saveHabits();
+  renderHabits(); renderHabitChart();
+}
+function deleteHabit(id, skipConfirm){
+  if(!skipConfirm && !confirm("Excluir este hábito? O histórico dele também será apagado.")) return;
+  Object.keys(habitLogs).forEach(date=>{
+    if((habitLogs[date]||[]).includes(id)) revokeXP(`habit_${id}_${date}`);
+    habitLogs[date] = (habitLogs[date]||[]).filter(hid=>hid!==id);
+  });
+  habitList = habitList.filter(h=>h.id!==id);
+  saveHabits();
+  renderHabits(); renderHabitChart();
+}
+function toggleHabitToday(id){
+  const key = dateKey(today);
+  if(!habitLogs[key]) habitLogs[key]=[];
+  const idx = habitLogs[key].indexOf(id);
+  const xpKey = `habit_${id}_${key}`;
+  if(idx>=0){ habitLogs[key].splice(idx,1); revokeXP(xpKey); }
+  else { habitLogs[key].push(id); grantXP(xpKey,5,key); }
+  saveHabits();
+  renderHabits(); renderHabitChart();
+}
+function computeHabitStreak(id){
+  let streak=0, cursor=new Date(today);
+  while((habitLogs[dateKey(cursor)]||[]).includes(id)){ streak++; cursor.setDate(cursor.getDate()-1); }
+  return streak;
+}
+function renderHabits(){
+  const container = document.getElementById("habitsToday");
+  if(!container) return;
+  if(habitList.length===0){ container.innerHTML = `<p class="empty-hint">Nenhum hábito cadastrado ainda.</p>`; return; }
+  const todayKey = dateKey(today);
+  const doneToday = habitLogs[todayKey]||[];
+  container.innerHTML = habitList.map(habit=>{
+    const done = doneToday.includes(habit.id);
+    const streak = computeHabitStreak(habit.id);
+    return `
+      <div class="task ${done?"done":""}">
+        <input type="checkbox" ${done?"checked":""} onchange="toggleHabitToday(${habit.id})">
+        <span class="task-name">${escapeHTML(habit.name)}</span>
+        ${areaBadge(habit.area)}
+        <span class="muted" style="font-size:12px;margin-left:auto">${streak>0 ? streak+" dia"+(streak===1?"":"s")+" seguidos" : ""}</span>
+        <div class="task-actions"><button class="small-btn" onclick="openEntityEdit('habit',${habit.id})">Editar</button></div>
+      </div>
+    `;
+  }).join("");
+}
+function getHabitConsistencyData(days){
+  const labels=[], values=[];
+  for(let i=days-1;i>=0;i--){
+    const d=new Date(today); d.setDate(d.getDate()-i);
+    const key=dateKey(d);
+    const done=(habitLogs[key]||[]).length;
+    const pct = habitList.length ? Math.round(done/habitList.length*100) : 0;
+    labels.push(formatDateShort(d)); values.push(pct);
+  }
+  return {labels,values};
+}
+function renderHabitChart(){
+  const canvas = document.getElementById("habitsChart");
+  if(!canvas) return;
+  const {labels,values} = getHabitConsistencyData(14);
+  drawLineChart(canvas, labels, values);
+}
+
+/* =========================================================
+   ESTUDOS
+========================================================= */
+
+function addSubject(){
+  const name = document.getElementById("subjectName").value.trim();
+  const target = parseFloat(document.getElementById("subjectTarget").value) || 0;
+  const area = document.getElementById("subjectArea").value;
+  if(!name){ alert("Dê um nome para a matéria."); return; }
+  subjects.push({ id:Date.now(), name, weeklyTargetHours:target, area });
+  document.getElementById("subjectName").value=""; document.getElementById("subjectTarget").value="";
+  saveStudies(); renderStudies(); refreshLinkedSelects();
+}
+function editSubject(id){
+  const subject = subjects.find(s=>s.id===id);
+  if(!subject) return;
+  editingSubjectId = id;
+  document.getElementById("editSubjectName").value = subject.name;
+  document.getElementById("editSubjectTarget").value = subject.weeklyTargetHours||0;
+  document.getElementById("editSubjectArea").innerHTML = areaOptionsHTML(subject.area);
+  document.getElementById("subjectModal").classList.add("show");
+}
+function saveSubjectEdit(){
+  const subject = subjects.find(s=>s.id===editingSubjectId);
+  if(!subject) return;
+  const name = document.getElementById("editSubjectName").value.trim();
+  if(!name){ alert("A matéria precisa ter um nome."); return; }
+  subject.name = name;
+  subject.weeklyTargetHours = parseFloat(document.getElementById("editSubjectTarget").value) || 0;
+  subject.area = document.getElementById("editSubjectArea").value;
+  saveStudies(); closeModal("subjectModal");
+  renderStudies(); refreshLinkedSelects(); renderGoals(); renderGoalsPreview();
+}
+function deleteEditingSubject(){
+  if(!confirm("Excluir esta matéria? As sessões e metas vinculadas a ela deixarão de fazer sentido.")) return;
+  const removed = sessions.filter(s=>s.subjectId===editingSubjectId);
+  removed.forEach(s=>revokeXP(`study_${s.id}`));
+  subjects = subjects.filter(s=>s.id!==editingSubjectId);
+  sessions = sessions.filter(s=>s.subjectId!==editingSubjectId);
+  saveStudies(); closeModal("subjectModal");
+  renderStudies(); refreshLinkedSelects(); renderGoals(); renderGoalsPreview();
+}
+function logSession(){
+  const subjectId = Number(document.getElementById("sessionSubject").value);
+  const minutes = parseInt(document.getElementById("sessionMinutes").value,10);
+  const date = document.getElementById("sessionDate").value || dateKey(today);
+  if(!subjectId){ alert("Cadastre uma matéria primeiro."); return; }
+  if(!minutes || minutes<=0){ alert("Informe quantos minutos você estudou."); return; }
+  const id = Date.now();
+  sessions.push({ id, subjectId, minutes, date });
+  grantXP(`study_${id}`, Math.floor(minutes/10), date);
+  document.getElementById("sessionMinutes").value="";
+  saveStudies(); renderStudies(); renderGoals(); renderGoalsPreview();
+}
+function getWeekHours(subjectId, refDate){
+  const weekStart = startOfWeek(refDate||today);
+  const weekEnd = new Date(weekStart); weekEnd.setDate(weekEnd.getDate()+6);
+  return sessions.filter(s=>s.subjectId===subjectId).filter(s=>{
+    const d=parseDate(s.date); return d>=weekStart && d<=weekEnd;
+  }).reduce((sum,s)=>sum+s.minutes,0)/60;
+}
+function renderStudies(){
+  const list = document.getElementById("subjectsList");
+  if(subjects.length===0){
+    list.innerHTML = `<p class="empty-hint">Nenhuma matéria cadastrada ainda.</p>`;
+    document.getElementById("studiesWeekTotal").textContent = ""; return;
+  }
+  let weekTotal=0;
+  list.innerHTML = subjects.map(subject=>{
+    const hours = getWeekHours(subject.id); weekTotal+=hours;
+    const target = subject.weeklyTargetHours||0;
+    const pct = target>0 ? Math.min(100,Math.round(hours/target*100)) : 0;
+    return `
+      <div class="entity-card">
+        <div class="entity-top">
+          <div>
+            <div class="entity-name">${escapeHTML(subject.name)}</div>
+            <div class="entity-sub">${hours.toFixed(1)}h essa semana ${target>0 ? "de "+target+"h meta" : "(sem meta definida)"} ${areaBadge(subject.area)}</div>
+          </div>
+          <div class="entity-actions"><button class="small-btn" onclick="editSubject(${subject.id})">Editar</button></div>
+        </div>
+        ${target>0 ? `<div class="progress-mini"><div class="progress-mini-bar" style="width:${pct}%"></div></div>` : ""}
+      </div>
+    `;
+  }).join("");
+  document.getElementById("studiesWeekTotal").textContent = `total da semana: ${weekTotal.toFixed(1)}h`;
+}
+
+/* =========================================================
+   PROJETOS (com subtarefas)
+========================================================= */
+
+function statusBadgeClass(status){ return status==="Concluído" ? "green" : status==="Em andamento" ? "blue" : ""; }
+function statusProgress(status){ return status==="Concluído" ? 100 : status==="Em andamento" ? 50 : 0; }
+function getProjectProgress(project){
+  const subtasks = project.subtasks||[];
+  if(subtasks.length>0) return Math.round(subtasks.filter(s=>s.done).length/subtasks.length*100);
+  return project.progress||0;
+}
+function addProject(){
+  const name = document.getElementById("projectName").value.trim();
+  const status = document.getElementById("projectStatus").value;
+  const area = document.getElementById("projectArea").value;
+  if(!name){ alert("Dê um nome ao projeto."); return; }
+  projects.push({ id:Date.now(), name, status, progress:statusProgress(status), area, subtasks:[] });
+  document.getElementById("projectName").value="";
+  saveProjects(); renderProjects(); refreshLinkedSelects();
+}
+function adjustProjectProgress(id, delta){
+  const project = projects.find(p=>p.id===id);
+  if(!project) return;
+  project.progress = Math.max(0,Math.min(100,(project.progress||0)+delta));
+  if(project.progress===100) project.status="Concluído";
+  else if(project.progress>0 && project.status==="Não iniciado") project.status="Em andamento";
+  saveProjects(); renderProjects(); renderGoals(); renderGoalsPreview(); syncBonusXP();
+}
+function addSubtask(projectId){
+  const input = document.getElementById(`subtask-input-${projectId}`);
+  const name = input.value.trim();
+  if(!name) return;
+  const project = projects.find(p=>p.id===projectId);
+  if(!project.subtasks) project.subtasks=[];
+  project.subtasks.push({ id:Date.now(), name, done:false });
+  input.value="";
+  saveProjects(); renderProjects(); syncBonusXP();
+}
+function toggleSubtask(projectId, subtaskId){
+  const project = projects.find(p=>p.id===projectId);
+  const subtask = (project.subtasks||[]).find(s=>s.id===subtaskId);
+  if(!subtask) return;
+  subtask.done = !subtask.done;
+  if(getProjectProgress(project)===100) project.status="Concluído";
+  else if(project.status==="Concluído") project.status="Em andamento";
+  saveProjects(); renderProjects(); renderGoals(); renderGoalsPreview(); syncBonusXP();
+}
+function deleteSubtask(projectId, subtaskId){
+  const project = projects.find(p=>p.id===projectId);
+  project.subtasks = (project.subtasks||[]).filter(s=>s.id!==subtaskId);
+  saveProjects(); renderProjects(); syncBonusXP();
+}
+function editProject(id){
+  const project = projects.find(p=>p.id===id);
+  if(!project) return;
+  editingProjectId = id;
+  document.getElementById("editProjectName").value = project.name;
+  document.getElementById("editProjectStatus").value = project.status;
+  document.getElementById("editProjectArea").innerHTML = areaOptionsHTML(project.area);
+  document.getElementById("projectModal").classList.add("show");
+}
+function saveProjectEdit(){
+  const project = projects.find(p=>p.id===editingProjectId);
+  if(!project) return;
+  const name = document.getElementById("editProjectName").value.trim();
+  if(!name){ alert("O projeto precisa ter um nome."); return; }
+  project.name = name;
+  project.status = document.getElementById("editProjectStatus").value;
+  project.area = document.getElementById("editProjectArea").value;
+  saveProjects(); closeModal("projectModal");
+  renderProjects(); refreshLinkedSelects(); renderGoals(); renderGoalsPreview();
+}
+function deleteEditingProject(){
+  if(!confirm("Excluir este projeto? Metas vinculadas a ele deixarão de fazer sentido.")) return;
+  revokeXP(`project_${editingProjectId}`);
+  projects = projects.filter(p=>p.id!==editingProjectId);
+  saveProjects(); closeModal("projectModal");
+  renderProjects(); refreshLinkedSelects(); renderGoals(); renderGoalsPreview();
+}
+function renderProjects(){
+  const list = document.getElementById("projectsList");
+  if(projects.length===0){ list.innerHTML = `<p class="empty-hint">Nenhum projeto cadastrado ainda.</p>`; return; }
+  list.innerHTML = projects.map(project=>{
+    const subtasks = project.subtasks||[];
+    const progress = getProjectProgress(project);
+    return `
+      <div class="entity-card">
+        <div class="entity-top">
+          <div>
+            <div class="entity-name">${escapeHTML(project.name)}</div>
+            <div class="entity-sub"><span class="badge ${statusBadgeClass(project.status)}">${project.status}</span>${areaBadge(project.area)}</div>
+          </div>
+          <div class="entity-actions"><button class="small-btn" onclick="editProject(${project.id})">Editar</button></div>
+        </div>
+        <div class="progress-mini"><div class="progress-mini-bar" style="width:${progress}%"></div></div>
+        ${subtasks.length===0 ? `
+          <div class="stepper">
+            <button class="small-btn" onclick="adjustProjectProgress(${project.id},-10)">−10%</button>
+            <button class="small-btn" onclick="adjustProjectProgress(${project.id},10)">+10%</button>
+            <span>${progress}% concluído</span>
+          </div>
+        ` : `
+          <div style="margin-top:10px">
+            ${subtasks.map(s=>`
+              <div class="subtask-row ${s.done?"done":""}">
+                <input type="checkbox" ${s.done?"checked":""} onchange="toggleSubtask(${project.id},${s.id})">
+                <span>${escapeHTML(s.name)}</span>
+                <button class="small-btn" onclick="deleteSubtask(${project.id},${s.id})">×</button>
+              </div>
+            `).join("")}
+          </div>
+        `}
+        <div class="add" style="margin-top:9px">
+          <input id="subtask-input-${project.id}" class="input" placeholder="Nova subtarefa..." onkeydown="if(event.key==='Enter') addSubtask(${project.id})">
+          <button class="small-btn" onclick="addSubtask(${project.id})">+</button>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+/* =========================================================
+   METAS (conectadas a matérias e projetos)
+========================================================= */
+
+function updateGoalLinkField(){
+  const type = document.getElementById("goalType").value;
+  const linkSelect = document.getElementById("goalLink");
+  if(type==="manual"){ linkSelect.style.display="none"; return; }
+  linkSelect.style.display="block";
+  if(type==="subject") linkSelect.innerHTML = subjects.map(s=>`<option value="${s.id}">${escapeHTML(s.name)}</option>`).join("") || `<option value="">Cadastre uma matéria primeiro</option>`;
+  if(type==="project") linkSelect.innerHTML = projects.map(p=>`<option value="${p.id}">${escapeHTML(p.name)}</option>`).join("") || `<option value="">Cadastre um projeto primeiro</option>`;
+}
+function refreshLinkedSelects(){
+  const sessionSelect = document.getElementById("sessionSubject");
+  if(sessionSelect) sessionSelect.innerHTML = subjects.map(s=>`<option value="${s.id}">${escapeHTML(s.name)}</option>`).join("") || `<option value="">Cadastre uma matéria</option>`;
+  updateGoalLinkField();
+}
+function addGoal(){
+  const title = document.getElementById("goalTitle").value.trim();
+  const type = document.getElementById("goalType").value;
+  const linkId = document.getElementById("goalLink").value;
+  const area = document.getElementById("goalArea").value;
+  const deadline = document.getElementById("goalDeadline").value;
+  if(!title){ alert("Dê um título para a meta."); return; }
+  if(type!=="manual" && !linkId){ alert("Escolha o que essa meta vai acompanhar."); return; }
+  goals.push({ id:Date.now(), title, type, linkedId: type!=="manual" ? Number(linkId) : null, deadline, progress:0, area });
+  document.getElementById("goalTitle").value=""; document.getElementById("goalDeadline").value="";
+  saveGoals(); renderGoals(); renderGoalsPreview();
+}
+function adjustGoalProgress(id, delta){
+  const goal = goals.find(g=>g.id===id);
+  if(!goal || goal.type!=="manual") return;
+  goal.progress = Math.max(0,Math.min(100,(goal.progress||0)+delta));
+  saveGoals(); renderGoals(); renderGoalsPreview(); syncBonusXP();
+}
+function computeGoalProgress(goal){
+  if(goal.type==="manual") return goal.progress||0;
+  if(goal.type==="project"){ const p=projects.find(p=>p.id===goal.linkedId); return p ? getProjectProgress(p) : 0; }
+  if(goal.type==="subject"){
+    const s=subjects.find(s=>s.id===goal.linkedId);
+    if(!s || !s.weeklyTargetHours) return 0;
+    return Math.min(100, Math.round(getWeekHours(s.id)/s.weeklyTargetHours*100));
+  }
+  return 0;
+}
+function goalLinkedLabel(goal){
+  if(goal.type==="project"){ const p=projects.find(p=>p.id===goal.linkedId); return p ? `Projeto: ${p.name}` : "Projeto removido"; }
+  if(goal.type==="subject"){ const s=subjects.find(s=>s.id===goal.linkedId); return s ? `Matéria: ${s.name}` : "Matéria removida"; }
+  return "Meta manual";
+}
+function deadlineLabel(deadline){
+  if(!deadline) return "";
+  const d = parseDate(deadline);
+  const diffDays = Math.ceil((d-new Date(dateKey(today)))/86400000);
+  if(diffDays<0) return `venceu em ${formatDateShort(d)}`;
+  if(diffDays===0) return "prazo é hoje";
+  return `faltam ${diffDays} dia${diffDays===1?"":"s"} (${formatDateShort(d)})`;
+}
+function renderGoals(){
+  const list = document.getElementById("goalsList");
+  if(goals.length===0){ list.innerHTML = `<p class="empty-hint">Nenhuma meta cadastrada.</p>`; return; }
+  list.innerHTML = goals.map(goal=>{
+    const progress = computeGoalProgress(goal);
+    const badgeClass = goal.type==="manual" ? "purple" : goal.type==="subject" ? "yellow" : "blue";
+    return `
+      <div class="entity-card">
+        <div class="entity-top">
+          <div>
+            <div class="entity-name">${escapeHTML(goal.title)}</div>
+            <div class="entity-sub">
+              <span class="badge ${badgeClass}">${goalLinkedLabel(goal)}</span>
+              ${areaBadge(goal.area)}
+              ${goal.deadline ? " · "+deadlineLabel(goal.deadline) : ""}
+            </div>
+          </div>
+          <div class="entity-actions"><button class="small-btn" onclick="openEntityEdit('goal',${goal.id})">Editar</button></div>
+        </div>
+        <div class="progress-mini"><div class="progress-mini-bar" style="width:${progress}%"></div></div>
+        ${goal.type==="manual" ? `
+          <div class="stepper">
+            <button class="small-btn" onclick="adjustGoalProgress(${goal.id},-10)">−10%</button>
+            <button class="small-btn" onclick="adjustGoalProgress(${goal.id},10)">+10%</button>
+            <span>${progress}% concluído</span>
+          </div>
+        ` : `<div class="stepper"><span>${progress}% concluído automaticamente</span></div>`}
+      </div>
+    `;
+  }).join("");
+  syncBonusXP();
+}
+function renderGoalsPreview(){
+  const container = document.getElementById("goalsPreview");
+  if(!container) return;
+  if(goals.length===0){ container.innerHTML = `<p class="empty-hint">Nenhuma meta ainda.</p>`; return; }
+  const sorted = [...goals].sort((a,b)=>{
+    if(a.deadline && b.deadline) return parseDate(a.deadline)-parseDate(b.deadline);
+    if(a.deadline) return -1; if(b.deadline) return 1; return 0;
+  }).slice(0,3);
+  container.innerHTML = sorted.map(goal=>{
+    const progress = computeGoalProgress(goal);
+    return `
+      <div style="margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px">
+          <span>${escapeHTML(goal.title)}</span><span class="muted">${progress}%</span>
+        </div>
+        <div class="progress-mini"><div class="progress-mini-bar" style="width:${progress}%"></div></div>
+      </div>
+    `;
+  }).join("");
+}
+function syncBonusXP(){
+  let changed=false;
+  projects.forEach(p=>{
+    const key=`project_${p.id}`, progress=getProjectProgress(p);
+    if(progress===100 && !xpLedger[key]){ xpLedger[key]={amount:50,date:dateKey(today)}; changed=true; }
+    if(progress<100 && xpLedger[key]){ delete xpLedger[key]; changed=true; }
+  });
+  goals.forEach(g=>{
+    const key=`goal_${g.id}`, progress=computeGoalProgress(g);
+    if(progress===100 && !xpLedger[key]){ xpLedger[key]={amount:30,date:dateKey(today)}; changed=true; }
+    if(progress<100 && xpLedger[key]){ delete xpLedger[key]; changed=true; }
+  });
+  if(changed){ saveXP(); updateProgress(); }
+}
+
+/* =========================================================
+   HOBBIES
+========================================================= */
+
+const hobbyStatusCycle = ["Praticando","Quero praticar","Não pratico mais"];
+const mediaStatusCycle = ["Em andamento","Quero começar","Concluído"];
+function hobbyBadgeClass(status){ return status==="Praticando" ? "green" : status==="Quero praticar" ? "yellow" : ""; }
+function mediaBadgeClass(status){ return status==="Em andamento" ? "blue" : status==="Concluído" ? "green" : "yellow"; }
+
+function addHobby(){
+  const name = document.getElementById("hobbyName").value.trim();
+  const status = document.getElementById("hobbyStatus").value;
+  if(!name){ alert("Dê um nome ao hobby."); return; }
+  hobbies.push({ id:Date.now(), name, status });
+  document.getElementById("hobbyName").value="";
+  saveHobbies(); renderHobbies();
+}
+function cycleHobbyStatus(id){
+  const hobby = hobbies.find(h=>h.id===id);
+  if(!hobby) return;
+  hobby.status = hobbyStatusCycle[(hobbyStatusCycle.indexOf(hobby.status)+1)%hobbyStatusCycle.length];
+  saveHobbies(); renderHobbies();
+}
+function renderHobbies(){
+  const list = document.getElementById("hobbiesList");
+  if(!list) return;
+  if(hobbies.length===0){ list.innerHTML = `<p class="empty-hint">Nenhum hobby cadastrado ainda.</p>`; return; }
+  list.innerHTML = hobbies.map(hobby=>`
+    <div class="entity-card">
+      <div class="entity-top">
+        <div>
+          <div class="entity-name">${escapeHTML(hobby.name)}</div>
+          <div class="entity-sub"><span class="badge ${hobbyBadgeClass(hobby.status)}">${hobby.status}</span></div>
+        </div>
+        <div class="entity-actions">
+          <button class="small-btn" onclick="cycleHobbyStatus(${hobby.id})">Mudar status</button>
+          <button class="small-btn" onclick="openEntityEdit('hobby',${hobby.id})">Editar</button>
+        </div>
+      </div>
+    </div>
+  `).join("");
+}
+function addMedia(){
+  const title = document.getElementById("mediaTitle").value.trim();
+  const kind = document.getElementById("mediaKind").value;
+  const status = document.getElementById("mediaStatus").value;
+  if(!title){ alert("Dê um título."); return; }
+  media.push({ id:Date.now(), title, kind, status });
+  document.getElementById("mediaTitle").value="";
+  saveMedia(); renderMedia();
+}
+function cycleMediaStatus(id){
+  const item = media.find(m=>m.id===id);
+  if(!item) return;
+  item.status = mediaStatusCycle[(mediaStatusCycle.indexOf(item.status)+1)%mediaStatusCycle.length];
+  saveMedia(); renderMedia();
+}
+function renderMediaGroup(containerId, kind){
+  const container = document.getElementById(containerId);
+  if(!container) return;
+  const items = media.filter(m=>m.kind===kind);
+  if(items.length===0){ container.innerHTML = `<p class="empty-hint">Nada por aqui ainda.</p>`; return; }
+  container.innerHTML = items.map(item=>`
+    <div class="entity-card">
+      <div class="entity-top">
+        <div>
+          <div class="entity-name">${escapeHTML(item.title)}</div>
+          <div class="entity-sub"><span class="badge ${mediaBadgeClass(item.status)}">${item.status}</span></div>
+        </div>
+        <div class="entity-actions">
+          <button class="small-btn" onclick="cycleMediaStatus(${item.id})">Mudar status</button>
+          <button class="small-btn" onclick="openEntityEdit('media',${item.id})">Editar</button>
+        </div>
+      </div>
+    </div>
+  `).join("");
+}
+function renderMedia(){
+  renderMediaGroup("mediaBooksList","Livro/Mangá");
+  renderMediaGroup("mediaScreenList","Filme/Série/Anime");
+}
+
+/* =========================================================
+   MODAL GENÉRICO
+========================================================= */
+
+function openEntityEdit(type, id){
+  editingEntity = { type, id };
+  document.getElementById("entityTextGroup").style.display="none";
+  document.getElementById("entitySelect1Group").style.display="none";
+  document.getElementById("entitySelect2Group").style.display="none";
+  document.getElementById("entityDateGroup").style.display="none";
+  document.getElementById("entityNameLabel").textContent="Nome";
+
+  if(type==="habit"){
+    const habit = habitList.find(h=>h.id===id);
+    document.getElementById("entityModalTitle").textContent="Editar hábito";
+    document.getElementById("entityName").value = habit.name;
+  }
+  if(type==="hobby"){
+    const hobby = hobbies.find(h=>h.id===id);
+    document.getElementById("entityModalTitle").textContent="Editar hobby";
+    document.getElementById("entityName").value = hobby.name;
+    document.getElementById("entitySelect1Group").style.display="block";
+    document.getElementById("entitySelect1Label").textContent="Status";
+    document.getElementById("entitySelect1").innerHTML = hobbyStatusCycle.map(s=>`<option ${s===hobby.status?"selected":""}>${s}</option>`).join("");
+  }
+  if(type==="media"){
+    const item = media.find(m=>m.id===id);
+    document.getElementById("entityModalTitle").textContent="Editar item";
+    document.getElementById("entityNameLabel").textContent="Título";
+    document.getElementById("entityName").value = item.title;
+    document.getElementById("entitySelect1Group").style.display="block";
+    document.getElementById("entitySelect1Label").textContent="Tipo";
+    document.getElementById("entitySelect1").innerHTML = ["Livro/Mangá","Filme/Série/Anime"].map(k=>`<option ${k===item.kind?"selected":""}>${k}</option>`).join("");
+    document.getElementById("entitySelect2Group").style.display="block";
+    document.getElementById("entitySelect2Label").textContent="Status";
+    document.getElementById("entitySelect2").innerHTML = mediaStatusCycle.map(s=>`<option ${s===item.status?"selected":""}>${s}</option>`).join("");
+  }
+  if(type==="reminder"){
+    const reminder = reminders.find(r=>r.id===id);
+    document.getElementById("entityModalTitle").textContent="Editar lembrete";
+    document.getElementById("entityNameLabel").textContent="Texto";
+    document.getElementById("entityName").value = reminder.text;
+    document.getElementById("entitySelect1Group").style.display="block";
+    document.getElementById("entitySelect1Label").textContent="Categoria";
+    document.getElementById("entitySelect1").innerHTML = ["Lembrete","Comprar","Ligar","Resolver"].map(c=>`<option ${c===reminder.category?"selected":""}>${c}</option>`).join("");
+  }
+  if(type==="goal"){
+    const goal = goals.find(g=>g.id===id);
+    document.getElementById("entityModalTitle").textContent="Editar meta";
+    document.getElementById("entityNameLabel").textContent="Título";
+    document.getElementById("entityName").value = goal.title;
+    document.getElementById("entityDateGroup").style.display="block";
+    document.getElementById("entityDateLabel").textContent="Prazo";
+    document.getElementById("entityDate").value = goal.deadline||"";
+  }
+  if(type==="note"){
+    const note = notes.find(n=>n.id===id);
+    document.getElementById("entityModalTitle").textContent="Editar nota";
+    document.getElementById("entityNameLabel").textContent="Título";
+    document.getElementById("entityName").value = note.title;
+    document.getElementById("entityTextGroup").style.display="block";
+    document.getElementById("entityText").value = note.content;
+  }
+  document.getElementById("entityModal").classList.add("show");
+}
+function saveEntityEdit(){
+  const { type, id } = editingEntity;
+  const name = document.getElementById("entityName").value.trim();
+  if(!name){ alert("Esse campo não pode ficar vazio."); return; }
+
+  if(type==="habit"){ const h=habitList.find(x=>x.id===id); h.name=name; saveHabits(); renderHabits(); }
+  if(type==="hobby"){ const h=hobbies.find(x=>x.id===id); h.name=name; h.status=document.getElementById("entitySelect1").value; saveHobbies(); renderHobbies(); }
+  if(type==="media"){ const m=media.find(x=>x.id===id); m.title=name; m.kind=document.getElementById("entitySelect1").value; m.status=document.getElementById("entitySelect2").value; saveMedia(); renderMedia(); }
+  if(type==="reminder"){ const r=reminders.find(x=>x.id===id); r.text=name; r.category=document.getElementById("entitySelect1").value; saveReminders(); renderReminders(); }
+  if(type==="goal"){ const g=goals.find(x=>x.id===id); g.title=name; g.deadline=document.getElementById("entityDate").value; saveGoals(); renderGoals(); renderGoalsPreview(); }
+  if(type==="note"){ const n=notes.find(x=>x.id===id); n.title=name; n.content=document.getElementById("entityText").value.trim(); saveNotes(); renderNotes(); }
+
+  closeModal("entityModal");
+}
+function deleteEntityEdit(){
+  const { type, id } = editingEntity;
+  if(!confirm("Excluir este item?")) return;
+  if(type==="habit") deleteHabit(id, true);
+  if(type==="hobby"){ hobbies = hobbies.filter(x=>x.id!==id); saveHobbies(); renderHobbies(); }
+  if(type==="media"){ media = media.filter(x=>x.id!==id); saveMedia(); renderMedia(); }
+  if(type==="reminder"){ reminders = reminders.filter(x=>x.id!==id); saveReminders(); renderReminders(); }
+  if(type==="goal"){ revokeXP(`goal_${id}`); goals = goals.filter(x=>x.id!==id); saveGoals(); renderGoals(); renderGoalsPreview(); }
+  if(type==="note"){ notes = notes.filter(x=>x.id!==id); saveNotes(); renderNotes(); }
+  closeModal("entityModal");
+}
+
+/* =========================================================
+   NOTAS
+========================================================= */
+
+function addNote(){
+  const title = document.getElementById("noteTitle").value.trim();
+  const content = document.getElementById("noteContent").value.trim();
+  if(!title){ alert("Dê um título à nota."); return; }
+  notes.push({ id:Date.now(), title, content, date:dateKey(today) });
+  document.getElementById("noteTitle").value=""; document.getElementById("noteContent").value="";
+  saveNotes(); renderNotes();
+}
+function renderNotes(){
+  const list = document.getElementById("notesList");
+  if(!list) return;
+  if(notes.length===0){ list.innerHTML = `<p class="empty-hint">Nenhuma nota ainda.</p>`; return; }
+  const sorted = [...notes].sort((a,b)=>b.id-a.id);
+  list.innerHTML = sorted.map(n=>{
+    const preview = n.content.length>160 ? n.content.slice(0,160)+"..." : n.content;
+    return `
+      <div class="entity-card">
+        <div class="entity-top">
+          <div>
+            <div class="entity-name">${escapeHTML(n.title)}</div>
+            <div class="entity-sub">${formatDateShort(parseDate(n.date))}</div>
+          </div>
+          <div class="entity-actions"><button class="small-btn" onclick="openEntityEdit('note',${n.id})">Editar</button></div>
+        </div>
+        <p class="muted" style="font-size:13px;margin-top:6px">${escapeHTML(preview)}</p>
+      </div>
+    `;
+  }).join("");
+}
+
+/* =========================================================
+   REVISÃO SEMANAL
+========================================================= */
+
+function addReview(){
+  const weekStart = dateKey(startOfWeek(today));
+  const review = {
+    id: Date.now(),
+    weekStart,
+    whatDid: document.getElementById("reviewDid").value.trim(),
+    pending: document.getElementById("reviewPending").value.trim(),
+    worked: document.getElementById("reviewWorked").value.trim(),
+    hindered: document.getElementById("reviewHindered").value.trim(),
+    priorities: document.getElementById("reviewPriorities").value.trim(),
+    studyHours: getWeekRangeStudyHours(startOfWeek(today)),
+    consistency: getWeekRangeConsistency(startOfWeek(today))
+  };
+  reviews.push(review);
+  ["reviewDid","reviewPending","reviewWorked","reviewHindered","reviewPriorities"].forEach(id=>document.getElementById(id).value="");
+  saveReviews(); renderReviews();
+}
+function deleteReview(id){
+  if(!confirm("Excluir esta revisão?")) return;
+  reviews = reviews.filter(r=>r.id!==id);
+  saveReviews(); renderReviews();
+}
+function getWeekRangeStudyHours(weekStart){
+  const weekEnd = new Date(weekStart); weekEnd.setDate(weekEnd.getDate()+6);
+  return sessions.filter(s=>{ const d=parseDate(s.date); return d>=weekStart && d<=weekEnd; }).reduce((sum,s)=>sum+s.minutes,0)/60;
+}
+function getWeekRangeConsistency(weekStart){
+  let done=0, total=0;
+  for(let i=0;i<7;i++){
+    const d=new Date(weekStart); d.setDate(d.getDate()+i);
+    if(d>today) continue;
+    const occ = getTasksForDate(dateKey(d));
+    total += occ.length; done += occ.filter(o=>o.done).length;
+  }
+  return total ? Math.round(done/total*100) : 0;
+}
+function renderReviews(){
+  const info = document.getElementById("reviewWeekInfo");
+  if(info){
+    const start = startOfWeek(today), end = new Date(start); end.setDate(end.getDate()+6);
+    info.textContent = `Semana atual: ${formatDate(start)} — ${formatDate(end)} · ${getWeekRangeStudyHours(start).toFixed(1)}h estudadas · ${getWeekRangeConsistency(start)}% de constância até agora`;
+  }
+  const list = document.getElementById("reviewsList");
+  if(!list) return;
+  if(reviews.length===0){ list.innerHTML = `<p class="empty-hint">Nenhuma revisão salva ainda.</p>`; return; }
+  const sorted = [...reviews].sort((a,b)=>b.weekStart.localeCompare(a.weekStart));
+  list.innerHTML = sorted.map(r=>{
+    const start = parseDate(r.weekStart), end = new Date(start); end.setDate(end.getDate()+6);
+    return `
+      <div class="entity-card">
+        <div class="entity-top">
+          <div class="entity-name">${formatDate(start)} — ${formatDate(end)}</div>
+          <div class="entity-actions"><button class="small-btn" onclick="deleteReview(${r.id})">×</button></div>
+        </div>
+        <div class="entity-sub" style="margin-bottom:8px">${r.studyHours.toFixed(1)}h estudadas · ${r.consistency}% de constância</div>
+        ${r.whatDid ? `<p style="font-size:13px;margin-top:6px"><strong>Fiz:</strong> ${escapeHTML(r.whatDid)}</p>` : ""}
+        ${r.pending ? `<p style="font-size:13px;margin-top:6px"><strong>Pendente:</strong> ${escapeHTML(r.pending)}</p>` : ""}
+        ${r.worked ? `<p style="font-size:13px;margin-top:6px"><strong>Funcionou:</strong> ${escapeHTML(r.worked)}</p>` : ""}
+        ${r.hindered ? `<p style="font-size:13px;margin-top:6px"><strong>Atrapalhou:</strong> ${escapeHTML(r.hindered)}</p>` : ""}
+        ${r.priorities ? `<p style="font-size:13px;margin-top:6px"><strong>Próximas prioridades:</strong> ${escapeHTML(r.priorities)}</p>` : ""}
+      </div>
+    `;
+  }).join("");
+}
+
+/* =========================================================
+   ESTATÍSTICAS
+========================================================= */
+
+function dayHasActivity(dateStr){
+  const occ = getTasksForDate(dateStr);
+  if(occ.some(o=>o.done)) return true;
+  if((habitLogs[dateStr]||[]).length>0) return true;
+  return false;
+}
+function computeCurrentStreak(){
+  let streak=0, cursor=new Date(today);
+  while(dayHasActivity(dateKey(cursor))){ streak++; cursor.setDate(cursor.getDate()-1); }
+  return streak;
+}
+function computeBestStreak(){
+  const allDates = new Set([...Object.keys(taskCompletions), ...Object.keys(habitLogs)]);
+  if(allDates.size===0) return 0;
+  const sorted = [...allDates].filter(d=>dayHasActivity(d)).sort();
+  let best=0, current=0, prevDate=null;
+  sorted.forEach(dateStr=>{
+    const d = parseDate(dateStr);
+    if(prevDate && Math.round((d-prevDate)/86400000)===1) current++; else current=1;
+    best = Math.max(best,current);
+    prevDate = d;
+  });
+  return best;
+}
+function mostProductiveWeekday(){
+  const totals=[0,0,0,0,0,0,0], counts=[0,0,0,0,0,0,0];
+  for(let i=0;i<60;i++){
+    const d=new Date(today); d.setDate(d.getDate()-i);
+    const key=dateKey(d), wd=weekdayIndex(d);
+    const occ=getTasksForDate(key);
+    totals[wd]+= occ.filter(o=>o.done).length + (habitLogs[key]||[]).length;
+    counts[wd]++;
+  }
+  let bestIdx=0, bestAvg=-1;
+  for(let i=0;i<7;i++){ const avg=counts[i]?totals[i]/counts[i]:0; if(avg>bestAvg){bestAvg=avg;bestIdx=i;} }
+  return bestAvg>0 ? dayNames[bestIdx] : "—";
+}
+function renderStats(){
+  const start = startOfWeek(today), end = new Date(start); end.setDate(end.getDate()+6);
+  const prevStart = new Date(start); prevStart.setDate(prevStart.getDate()-7);
+  const prevEnd = new Date(start); prevEnd.setDate(prevEnd.getDate()-1);
+
+  let tasksWeek=0, habitsWeek=0;
+  for(let i=0;i<7;i++){
+    const d=new Date(start); d.setDate(d.getDate()+i);
+    const key=dateKey(d);
+    tasksWeek += getTasksForDate(key).filter(o=>o.done).length;
+    habitsWeek += (habitLogs[key]||[]).length;
+  }
+  const studyHoursWeek = getWeekRangeStudyHours(start);
+  const xpWeek = xpForRange(start,end);
+
+  document.getElementById("statGrid").innerHTML = `
+    <div class="stat-box"><small>Sequência atual</small><strong>${computeCurrentStreak()} dias</strong></div>
+    <div class="stat-box"><small>Melhor sequência</small><strong>${computeBestStreak()} dias</strong></div>
+    <div class="stat-box"><small>Tarefas esta semana</small><strong>${tasksWeek}</strong></div>
+    <div class="stat-box"><small>Hábitos esta semana</small><strong>${habitsWeek}</strong></div>
+    <div class="stat-box"><small>Horas estudadas</small><strong>${studyHoursWeek.toFixed(1)}h</strong></div>
+    <div class="stat-box"><small>XP esta semana</small><strong>${xpWeek}</strong></div>
+    <div class="stat-box"><small>Dia mais produtivo</small><strong>${mostProductiveWeekday()}</strong></div>
+  `;
+
+  let tasksPrev=0, habitsPrev=0;
+  for(let i=0;i<7;i++){
+    const d=new Date(prevStart); d.setDate(d.getDate()+i);
+    const key=dateKey(d);
+    tasksPrev += getTasksForDate(key).filter(o=>o.done).length;
+    habitsPrev += (habitLogs[key]||[]).length;
+  }
+  const studyHoursPrev = getWeekRangeStudyHours(prevStart);
+  const xpPrev = xpForRange(prevStart,prevEnd);
+
+  document.getElementById("statCompare").innerHTML = `
+    <div class="compare-row"><span>Tarefas concluídas</span><span>${tasksPrev} → <strong>${tasksWeek}</strong></span></div>
+    <div class="compare-row"><span>Hábitos cumpridos</span><span>${habitsPrev} → <strong>${habitsWeek}</strong></span></div>
+    <div class="compare-row"><span>Horas estudadas</span><span>${studyHoursPrev.toFixed(1)}h → <strong>${studyHoursWeek.toFixed(1)}h</strong></span></div>
+    <div class="compare-row"><span>XP ganho</span><span>${xpPrev} → <strong>${xpWeek}</strong></span></div>
+  `;
+
+  const taskCounts = {}, studyCounts = {};
+  for(let i=0;i<7;i++){
+    const d=new Date(start); d.setDate(d.getDate()+i);
+    getTasksForDate(dateKey(d)).filter(o=>o.done).forEach(o=>{
+      const area = o.template.area || "Sem área";
+      taskCounts[area] = (taskCounts[area]||0)+1;
+    });
+  }
+  sessions.filter(s=>{ const d=parseDate(s.date); return d>=start && d<=end; }).forEach(s=>{
+    const subject = subjects.find(sub=>sub.id===s.subjectId);
+    const area = subject && subject.area ? subject.area : "Sem área";
+    studyCounts[area] = (studyCounts[area]||0) + s.minutes/60;
+  });
+
+  const areaKeys = [...new Set([...Object.keys(taskCounts), ...Object.keys(studyCounts)])];
+  document.getElementById("statAreas").innerHTML = areaKeys.length===0
+    ? `<p class="empty-hint">Sem dados suficientes ainda esta semana.</p>`
+    : areaKeys.map(area=>`
+        <div class="compare-row">
+          <span>${escapeHTML(area)}</span>
+          <span>${taskCounts[area]||0} tarefa(s) · ${(studyCounts[area]||0).toFixed(1)}h estudo</span>
+        </div>
+      `).join("");
+}
+
+/* =========================================================
+   BUSCA GLOBAL
+========================================================= */
+
+function runSearch(){
+  const q = document.getElementById("globalSearch").value.trim().toLowerCase();
+  const results = document.getElementById("searchResults");
+  if(!q){ results.style.display="none"; results.innerHTML=""; return; }
+
+  const matches = [];
+  taskTemplates.forEach(t=>{ if(t.name.toLowerCase().includes(q)) matches.push({label:t.name,type:"Tarefa",page:"home"}); });
+  eventTemplates.forEach(e=>{ if(e.name.toLowerCase().includes(q)) matches.push({label:e.name,type:"Rotina",page:"routine"}); });
+  habitList.forEach(h=>{ if(h.name.toLowerCase().includes(q)) matches.push({label:h.name,type:"Hábito",page:"habits"}); });
+  subjects.forEach(s=>{ if(s.name.toLowerCase().includes(q)) matches.push({label:s.name,type:"Matéria",page:"studies"}); });
+  projects.forEach(p=>{ if(p.name.toLowerCase().includes(q)) matches.push({label:p.name,type:"Projeto",page:"projects"}); });
+  hobbies.forEach(h=>{ if(h.name.toLowerCase().includes(q)) matches.push({label:h.name,type:"Hobby",page:"hobbies"}); });
+  media.forEach(m=>{ if(m.title.toLowerCase().includes(q)) matches.push({label:m.title,type:"Mídia",page:"hobbies"}); });
+  goals.forEach(g=>{ if(g.title.toLowerCase().includes(q)) matches.push({label:g.title,type:"Meta",page:"goals"}); });
+  reminders.forEach(r=>{ if(r.text.toLowerCase().includes(q)) matches.push({label:r.text,type:"Lembrete",page:"home"}); });
+  notes.forEach(n=>{ if((n.title+" "+n.content).toLowerCase().includes(q)) matches.push({label:n.title,type:"Nota",page:"notes"}); });
+
+  results.innerHTML = matches.length===0
+    ? `<p class="empty-hint">Nada encontrado.</p>`
+    : matches.slice(0,20).map(m=>`
+        <div class="routine-mini-item" style="cursor:pointer" onclick="goToSearchResult('${m.page}')">
+          <span class="badge">${m.type}</span><span>${escapeHTML(m.label)}</span>
+        </div>
+      `).join("");
+  results.style.display="block";
+}
+function goToSearchResult(page){
+  const btn = document.querySelector(`.side-btn[data-page="${page}"]`);
+  if(btn) openPage(page, btn);
+  document.getElementById("globalSearch").value="";
+  document.getElementById("searchResults").style.display="none";
+}
+
+/* =========================================================
+   NAVEGAÇÃO
+========================================================= */
+
+function openPage(pageId, button){
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  document.getElementById(pageId).classList.add("active");
+  document.querySelectorAll(".side-btn").forEach(b=>b.classList.remove("active"));
+  button.classList.add("active");
+
+  if(pageId==="routine") renderCalendar();
+  if(pageId==="habits"){ renderHabits(); renderHabitChart(); }
+  if(pageId==="studies"){ renderStudies(); refreshLinkedSelects(); }
+  if(pageId==="projects") renderProjects();
+  if(pageId==="hobbies"){ renderHobbies(); renderMedia(); }
+  if(pageId==="goals"){ updateGoalLinkField(); renderGoals(); }
+  if(pageId==="stats") renderStats();
+  if(pageId==="review") renderReviews();
+  if(pageId==="notes") renderNotes();
+  if(pageId==="home"){ renderConsistencyChart(); renderTodayRoutine(); renderGoalsPreview(); renderReminders(); renderTasks(); }
+}
+
+/* =========================================================
+   CORREÇÃO AUTOMÁTICA DE NOVO DIA
+========================================================= */
+
+function checkNewDay(){
+  const now = new Date();
+  if(dateKey(now)!==dateKey(today)){
+    today = new Date(now);
+    selectedDate = dateKey(now);
+    selectedWeek = startOfWeek(now);
+    renderAll();
+  }
+}
+
+/* =========================================================
+   RELÓGIO
+========================================================= */
+
+function updateDateTime(){
+  const now = new Date();
+  document.getElementById("clock").textContent = now.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
+  document.getElementById("currentDate").textContent = now.toLocaleDateString("pt-BR",{weekday:"long",day:"2-digit",month:"long",year:"numeric"});
+}
+
+/* =========================================================
+   INICIALIZAÇÃO
+========================================================= */
+
+function renderAll(){
+  renderTasks();
+  renderCalendar();
+  renderConsistencyChart();
+  renderTodayRoutine();
+  renderHabits();
+  renderHabitChart();
+  renderReminders();
+  renderStudies();
+  renderProjects();
+  renderGoals();
+  renderGoalsPreview();
+  renderHobbies();
+  renderMedia();
+}
+
+populateTimes();
+renderWeekdayPicker("eventWeekdays");
+renderWeekdayPicker("editEventWeekdays");
+renderWeekdayPicker("editTaskWeekdays");
+document.getElementById("sessionDate").value = dateKey(today);
+document.getElementById("eventArea").innerHTML = areaOptionsHTML("");
+document.getElementById("habitArea").innerHTML = areaOptionsHTML("");
+document.getElementById("subjectArea").innerHTML = areaOptionsHTML("");
+document.getElementById("projectArea").innerHTML = areaOptionsHTML("");
+document.getElementById("goalArea").innerHTML = areaOptionsHTML("");
+
+renderAll();
+updateDateTime();
+
+setInterval(updateDateTime, 1000);
+setInterval(checkNewDay, 30000);
+window.addEventListener("resize", ()=>{ renderConsistencyChart(); renderHabitChart(); });
+
+document.querySelectorAll(".modal").forEach(modal=>{
+  modal.addEventListener("click", event=>{
+    if(event.target===modal) modal.classList.remove("show");
+  });
+});
+
+</script>
+
+</body>
+</html>
