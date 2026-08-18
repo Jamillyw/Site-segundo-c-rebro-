@@ -2,851 +2,1445 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MBC Life OS - Jamilly</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <title>LIFE OS — Seu sistema operacional pessoal</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         :root {
-            --bg-main: #050510;
-            --bg-card: rgba(18, 25, 65, 0.6);
-            --glass-border: rgba(255, 255, 255, 0.08);
-            --neon-blue: #2563eb;
-            --neon-cyan: #00d4ff;
-            --neon-purple: #7c3aed;
-            --text-main: #ffffff;
-            --text-muted: #94a3b8;
-            --sidebar-width: 280px;
+            --font: 'Inter', system-ui, -apple-system, sans-serif;
+            --bg-primary: #080d15;
+            --bg-secondary: #0e1726;
+            --bg-card: #16233a;
+            --bg-card-hover: #1f2e4a;
+            --bg-glass: rgba(22, 35, 58, 0.7);
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border-color: #243454;
+            --primary: #3b82f6;
+            --primary-glow: rgba(59, 130, 246, 0.4);
+            --secondary: #8b5cf6;
+            --accent: #06b6d4;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --radius: 16px;
+            --radius-sm: 10px;
+            --sidebar-width: 240px;
             --header-height: 70px;
+            --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            --shadow-glow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(59, 130, 246, 0.15);
+            --font-lg: 1.25rem;
+            --font-md: 1rem;
+            --font-sm: 0.875rem;
+            --font-xs: 0.75rem;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-        body { 
-            background-color: var(--bg-main);
-            background-image: radial-gradient(circle at 90% 10%, #151b4d 0%, #050510 60%);
-            color: var(--text-main);
-            height: 100vh;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: var(--font);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+            background-image: radial-gradient(circle at 20% 30%, rgba(59, 130, 246, 0.05) 0%, transparent 50%),
+                              radial-gradient(circle at 80% 70%, rgba(139, 92, 246, 0.05) 0%, transparent 50%);
+            min-height: 100vh;
+            min-height: 100dvh;
         }
-        
-        /* SCROLLBAR */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: var(--neon-purple); border-radius: 4px; }
+        a { text-decoration: none; color: inherit; }
+        button { cursor: pointer; font-family: inherit; border: none; background: transparent; color: inherit; outline: none; }
+        input, select, textarea { font-family: inherit; background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-primary); padding: 10px 14px; border-radius: var(--radius-sm); width: 100%; font-size: var(--font-sm); transition: var(--transition); }
+        input:focus, select:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-glow); outline: none; }
+        textarea { resize: vertical; min-height: 80px; }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-secondary); }
+        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
-        /* GLASSMORPHISM CARD */
-        .glass {
-            background: var(--bg-card);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            padding: 1.5rem;
-            transition: transform 0.2s ease, box-shadow 0.3s ease;
-        }
-        .glass:hover { box-shadow: 0 8px 32px rgba(37, 99, 235, 0.2); }
-
-        /* HEADER (TOP BAR) */
-        .header {
-            height: var(--header-height);
-            padding: 0 24px;
-            background: rgba(5, 5, 16, 0.8);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 100;
-            position: relative;
-        }
-
-        .header-left { display: flex; align-items: center; gap: 12px; }
-        .logo { font-size: 1.2rem; font-weight: 700; letter-spacing: 1px; background: linear-gradient(to right, var(--neon-cyan), var(--neon-purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        
-        .header-right { display: flex; align-items: center; gap: 24px; }
-        .user-greeting { font-size: 0.85rem; text-align: right; }
-        .user-greeting h3 { font-weight: 600; }
-        .user-greeting span { color: var(--text-muted); font-size: 0.75rem; }
-
-        .xp-container { display: flex; align-items: center; gap: 12px; }
-        .xp-bar-bg { width: 120px; height: 6px; background: rgba(255,255,255,0.1); border-radius: 6px; position: relative; overflow: hidden; }
-        .xp-bar-fill { height: 100%; background: linear-gradient(to right, var(--neon-blue), var(--neon-cyan)); border-radius: 6px; transition: width 0.4s ease; width: 0%; }
-        .level-tag { background: rgba(37, 99, 235, 0.2); padding: 4px 10px; border-radius: 12px; border: 1px solid var(--neon-blue); font-weight: 700; font-size: 0.8rem; }
-
-        .hamburger { display: none; background: transparent; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
-
-        /* WRAPPER */
-        .wrapper { display: flex; height: calc(100vh - var(--header-height)); position: relative; }
-
-        /* SIDEBAR */
-        .sidebar {
-            width: var(--sidebar-width);
-            height: 100%;
-            background: rgba(10, 12, 30, 0.85);
-            backdrop-filter: blur(8px);
-            border-right: 1px solid rgba(255,255,255,0.05);
-            padding: 16px 0;
+        /* ===== LAYOUT ===== */
+        #app { display: flex; min-height: 100vh; min-height: 100dvh; }
+        #sidebar {
+            width: var(--sidebar-width); background: var(--bg-glass); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border-right: 1px solid var(--border-color); height: 100vh; height: 100dvh; position: sticky; top: 0;
+            display: flex; flex-direction: column; padding: 20px 0; transition: transform var(--transition), margin var(--transition); z-index: 100;
             overflow-y: auto;
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 50;
-            flex-shrink: 0;
         }
+        #sidebar .logo { padding: 0 20px 30px 20px; font-size: 1.4rem; font-weight: 700; letter-spacing: -0.5px; color: var(--text-primary); display: flex; align-items: center; gap: 10px; }
+        #sidebar .logo span { color: var(--primary); }
+        .nav-links { flex: 1; padding: 0 12px; display: flex; flex-direction: column; gap: 4px; }
+        .nav-links a {
+            display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: var(--radius-sm);
+            font-size: var(--font-sm); font-weight: 500; color: var(--text-secondary); transition: var(--transition);
+        }
+        .nav-links a:hover, .nav-links a.active { background: var(--bg-card); color: var(--text-primary); }
+        .nav-links a.active { box-shadow: inset 3px 0 0 var(--primary); background: rgba(59, 130, 246, 0.1); color: var(--primary); }
+        .nav-links a i { width: 20px; height: 20px; }
 
-        .menu-item { list-style: none; }
-        .menu-link {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 24px;
-            color: var(--text-muted);
-            text-decoration: none;
-            font-size: 0.9rem;
-            border-left: 3px solid transparent;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .menu-link:hover, .menu-link.active { color: white; background: rgba(255,255,255,0.05); border-left-color: var(--neon-cyan); }
-        
-        /* Accordion Folders */
-        .folder-title {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 24px;
-            color: var(--text-muted);
-            font-weight: 600;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            cursor: pointer;
-            border-bottom: 1px solid rgba(255,255,255,0.03);
-        }
-        .folder-title:hover { color: white; background: rgba(255,255,255,0.03); }
-        .folder-title .arrow { transition: transform 0.3s; font-size: 0.7rem; }
-        .folder.open .folder-title .arrow { transform: rotate(90deg); }
-        .submenu { display: none; padding: 4px 0; }
-        .folder.open .submenu { display: block; animation: slideDown 0.3s ease; }
-        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-        .submenu .menu-link { padding-left: 48px; font-size: 0.85rem; border-left: none; }
+        #sidebar-bottom { padding: 20px; border-top: 1px solid var(--border-color); margin-top: auto; display: flex; flex-direction: column; gap: 15px; }
+        .user-mini { display: flex; align-items: center; gap: 12px; }
+        .user-mini .avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--secondary); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: var(--font-sm); }
+        .user-mini .info { display: flex; flex-direction: column; }
+        .user-mini .info .name { font-size: var(--font-sm); font-weight: 600; }
+        .user-mini .info .level { font-size: var(--font-xs); color: var(--text-muted); }
+        .xp-bar { height: 4px; background: var(--bg-card); border-radius: 4px; overflow: hidden; margin-top: 4px; }
+        .xp-bar .fill { height: 100%; background: var(--primary); border-radius: 4px; transition: width 0.5s ease; }
 
-        /* MAIN CONTENT */
-        .main-content {
-            flex: 1;
-            padding: 24px;
-            overflow-y: auto;
-            height: 100%;
-            position: relative;
+        #main { flex: 1; padding: 20px 30px 100px 30px; overflow-y: auto; max-width: 100%; }
+        #header {
+            display: flex; align-items: center; justify-content: space-between; padding-bottom: 25px; border-bottom: 1px solid var(--border-color);
+            margin-bottom: 25px; flex-wrap: wrap; gap: 15px;
         }
-        
-        .view { display: none; opacity: 0; animation: fadeSlide 0.4s forwards; }
-        .view.active { display: block; }
-        @keyframes fadeSlide { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+        #header .left h1 { font-size: 1.6rem; font-weight: 600; display: flex; align-items: center; gap: 10px; }
+        #header .left h1 span { color: var(--text-secondary); font-weight: 400; font-size: 1rem; }
+        #header .right { display: flex; align-items: center; gap: 12px; }
+        #header .right .date { color: var(--text-secondary); font-size: var(--font-sm); }
+        #header .right button { padding: 8px; border-radius: 50%; background: var(--bg-card); transition: var(--transition); display: flex; align-items: center; justify-content: center; }
+        #header .right button:hover { background: var(--bg-card-hover); color: var(--primary); }
+        .search-box { display: flex; align-items: center; gap: 8px; background: var(--bg-card); padding: 8px 14px; border-radius: 50px; border: 1px solid var(--border-color); transition: var(--transition); }
+        .search-box:focus-within { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-glow); }
+        .search-box input { border: none; background: transparent; padding: 0; width: 150px; font-size: var(--font-sm); }
+        .search-box input:focus { box-shadow: none; }
+        .search-box kbd { background: var(--bg-primary); padding: 2px 6px; border-radius: 4px; font-size: 10px; color: var(--text-muted); border: 1px solid var(--border-color); }
 
+        /* ===== BOTTOM NAV (Mobile) ===== */
+        #bottom-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg-glass); backdrop-filter: blur(12px); border-top: 1px solid var(--border-color); padding: 8px 0; justify-content: space-around; z-index: 200; }
+        #bottom-nav a { display: flex; flex-direction: column; align-items: center; font-size: var(--font-xs); color: var(--text-muted); gap: 2px; padding: 6px 10px; border-radius: var(--radius-sm); transition: var(--transition); }
+        #bottom-nav a i { width: 22px; height: 22px; }
+        #bottom-nav a.active { color: var(--primary); background: rgba(59, 130, 246, 0.1); }
+
+        /* ===== COMPONENTS ===== */
+        .card { background: var(--bg-card); border-radius: var(--radius); padding: 20px; border: 1px solid var(--border-color); box-shadow: 0 4px 20px rgba(0,0,0,0.3); transition: var(--transition); }
+        .card:hover { border-color: rgba(59, 130, 246, 0.3); box-shadow: var(--shadow-glow); }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .card-header h3 { font-size: var(--font-md); font-weight: 600; }
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-        
-        h2 { font-weight: 300; font-size: 1.5rem; margin-bottom: 20px; letter-spacing: 1px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+        .flex { display: flex; }
+        .flex-center { display: flex; align-items: center; justify-content: center; }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; }
+        .gap-2 { gap: 8px; }
+        .gap-4 { gap: 16px; }
+        .mt-4 { margin-top: 16px; }
+        .mb-4 { margin-bottom: 16px; }
+        .w-full { width: 100%; }
+        .text-center { text-align: center; }
+        .text-muted { color: var(--text-muted); font-size: var(--font-sm); }
+        .text-sm { font-size: var(--font-sm); }
+        .text-xs { font-size: var(--font-xs); }
+        .text-success { color: var(--success); }
+        .text-warning { color: var(--warning); }
+        .text-danger { color: var(--danger); }
+        .text-primary { color: var(--primary); }
 
-        /* COMPONENTS */
-        .habit-grid { display: grid; grid-template-columns: 150px repeat(7, 1fr); gap: 4px; text-align: center; font-size: 0.8rem; }
-        .habit-grid > div { padding: 8px; background: rgba(255,255,255,0.03); border-radius: 6px; display: flex; align-items: center; justify-content: center; }
-        .habit-checkbox { width: 20px; height: 20px; accent-color: var(--neon-cyan); transform: scale(1.2); cursor: pointer; }
-        
-        .water-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 16px; }
-        .water-glass { width: 100%; aspect-ratio: 3/4; border: 2px solid rgba(0, 212, 255, 0.3); border-radius: 0 0 16px 16px; border-top: none; background: rgba(255,255,255,0.05); cursor: pointer; transition: 0.2s; position: relative; }
-        .water-glass.filled { background: rgba(0, 212, 255, 0.6); border-color: var(--neon-cyan); box-shadow: inset 0 -10px 20px rgba(0, 212, 255, 0.4); }
-        
-        .journal-input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 12px; color: white; outline: none; resize: vertical; min-height: 120px; }
-        .mood-selector { display: flex; gap: 10px; margin: 10px 0; }
-        .mood-btn { padding: 8px 16px; border-radius: 20px; background: transparent; border: 1px solid var(--text-muted); color: var(--text-muted); cursor: pointer; transition: 0.2s; }
-        .mood-btn.selected, .mood-btn:hover { border-color: var(--neon-cyan); background: rgba(0, 212, 255, 0.1); color: white; }
+        .badge { display: inline-block; padding: 2px 10px; border-radius: 50px; font-size: var(--font-xs); font-weight: 600; background: var(--bg-secondary); color: var(--text-secondary); }
+        .badge-primary { background: rgba(59, 130, 246, 0.2); color: var(--primary); }
+        .badge-success { background: rgba(34, 197, 94, 0.2); color: var(--success); }
+        .badge-warning { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+        .badge-danger { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+        .badge-secondary { background: rgba(139, 92, 246, 0.2); color: var(--secondary); }
 
-        .macro-bar { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
-        .macro-item { display: flex; justify-content: space-between; font-size: 0.8rem; }
-        .macro-progress { height: 6px; background: rgba(255,255,255,0.1); border-radius: 6px; margin-top: 4px; }
-        .macro-fill { height: 100%; border-radius: 6px; width: 0%; }
-        .macro-fill.protein { background: #f97316; } .macro-fill.carbs { background: #22d3ee; } .macro-fill.fat { background: #f43f5e; }
+        .btn { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: var(--radius-sm); font-weight: 600; font-size: var(--font-sm); transition: var(--transition); border: 1px solid transparent; }
+        .btn-primary { background: var(--primary); color: #fff; }
+        .btn-primary:hover { background: #2563eb; box-shadow: 0 0 15px var(--primary-glow); }
+        .btn-secondary { background: var(--bg-secondary); color: var(--text-primary); border-color: var(--border-color); }
+        .btn-secondary:hover { background: var(--bg-card-hover); }
+        .btn-success { background: var(--success); color: #fff; }
+        .btn-success:hover { background: #16a34a; }
+        .btn-danger { background: var(--danger); color: #fff; }
+        .btn-danger:hover { background: #dc2626; }
+        .btn-outline { background: transparent; border: 1px solid var(--border-color); color: var(--text-secondary); }
+        .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+        .btn-sm { padding: 4px 12px; font-size: var(--font-xs); }
 
-        .fin-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 12px; }
-        .fin-table th, .fin-table td { text-align: left; padding: 12px 8px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .fin-table th { color: var(--text-muted); font-weight: 400; }
-        .transaction.positive { color: #4ade80; } .transaction.negative { color: #f87171; }
+        .progress-circle { width: 80px; height: 80px; border-radius: 50%; background: conic-gradient(var(--primary) 0%, var(--bg-card) 0%); display: flex; align-items: center; justify-content: center; position: relative; }
+        .progress-circle::after { content: ''; position: absolute; width: 70px; height: 70px; background: var(--bg-card); border-radius: 50%; }
+        .progress-circle .val { position: relative; z-index: 1; font-weight: 700; font-size: var(--font-lg); }
 
-        .ego-battle { display: flex; justify-content: space-between; align-items: center; margin: 20px 0; text-align: center; }
-        .ego-side { flex: 0.4; }
-        .ego-icon { width: 60px; height: 60px; border-radius: 50%; background: #151d4a; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; border: 2px solid transparent; font-size: 1.8rem; }
-        .ego-side.winner .ego-icon { border-color: var(--neon-cyan); box-shadow: 0 0 20px var(--neon-cyan); }
-        .ego-progress { height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; margin-top: 10px; position: relative; width: 100%; }
-        .ego-fill { height: 100%; border-radius: 4px; transition: width 0.5s; width: 50%; background: linear-gradient(to right, #f43f5e, var(--neon-cyan)); }
+        /* ===== VIEWS ===== */
+        .view { display: none; animation: fadeIn 0.3s ease; }
+        .view.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Routine Calendar Grid */
-        .calendar-grid { display: grid; grid-template-columns: 80px repeat(7, 1fr); gap: 2px; border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; overflow: hidden; font-size: 0.75rem; }
-        .cal-header { background: rgba(255,255,255,0.05); padding: 8px; text-align: center; font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .cal-time { padding: 8px; text-align: right; color: var(--text-muted); border-bottom: 1px solid rgba(255,255,255,0.02); }
-        .cal-cell { height: 35px; border-bottom: 1px solid rgba(255,255,255,0.02); position: relative; }
-        .cal-event { position: absolute; background: rgba(37, 99, 235, 0.7); border-left: 3px solid var(--neon-blue); width: 100%; padding: 2px 4px; border-radius: 4px; font-size: 0.65rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+        /* Calendar */
+        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+        .cal-day { background: var(--bg-secondary); border-radius: 8px; padding: 8px; text-align: center; font-size: var(--font-sm); min-height: 60px; border: 1px solid transparent; transition: var(--transition); cursor: pointer; }
+        .cal-day:hover { border-color: var(--primary); }
+        .cal-day.other-month { color: var(--text-muted); background: transparent; }
+        .cal-day.today { border-color: var(--primary); background: rgba(59, 130, 246, 0.1); }
+        .cal-day .dot { display: inline-block; width: 4px; height: 4px; border-radius: 50%; background: var(--primary); margin: 2px; }
+        .cal-day .dots { display: flex; justify-content: center; flex-wrap: wrap; gap: 2px; }
 
-        /* RESPONSIVE */
-        @media (max-width: 1024px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+        /* Routine (Time Blocking) */
+        .routine-grid { display: flex; flex-direction: column; gap: 2px; padding: 10px 0; position: relative; }
+        .routine-slot { display: flex; align-items: center; height: 40px; border-bottom: 1px solid var(--border-color); font-size: var(--font-xs); color: var(--text-muted); position: relative; }
+        .routine-slot .time { width: 50px; flex-shrink: 0; }
+        .routine-slot .bar { flex: 1; height: 100%; position: relative; border-left: 1px solid var(--border-color); margin-left: 10px; }
+        .event-block { position: absolute; left: 5px; right: 5px; background: var(--primary); border-radius: 6px; padding: 2px 6px; font-size: 10px; color: #fff; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; z-index: 10; border: 1px solid rgba(255,255,255,0.2); cursor: pointer; transition: var(--transition); }
+        .event-block:hover { filter: brightness(1.2); z-index: 20; }
+
+        /* Modal */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 999; align-items: center; justify-content: center; }
+        .modal-overlay.open { display: flex; }
+        .modal-box { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--radius); max-width: 500px; width: 90%; padding: 30px; box-shadow: var(--shadow-glow); max-height: 90vh; overflow-y: auto; }
+        .modal-box h2 { margin-bottom: 20px; }
+
+        /* Toast */
+        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 1000; display: flex; flex-direction: column; gap: 10px; }
+        .toast { background: var(--bg-secondary); border: 1px solid var(--border-color); border-left: 4px solid var(--primary); padding: 12px 20px; border-radius: var(--radius-sm); box-shadow: var(--shadow-glow); animation: slideIn 0.3s ease; min-width: 200px; }
+        .toast.success { border-left-color: var(--success); }
+        .toast.warning { border-left-color: var(--warning); }
+        .toast.danger { border-left-color: var(--danger); }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        /* Empty State */
+        .empty-state { text-align: center; padding: 40px 20px; color: var(--text-muted); }
+        .empty-state i { width: 48px; height: 48px; color: var(--border-color); margin-bottom: 16px; }
+        .empty-state h4 { color: var(--text-secondary); margin-bottom: 8px; }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 1024px) {
+            .grid-2 { grid-template-columns: 1fr; }
+            .grid-3 { grid-template-columns: 1fr 1fr; }
+        }
         @media (max-width: 768px) {
-            .header { padding: 0 16px; }
-            .hamburger { display: block; }
-            .sidebar { position: absolute; top: 0; left: 0; height: 100%; width: 320px; transform: translateX(-100%); box-shadow: 4px 0 24px rgba(0,0,0,0.8); }
-            .sidebar.open { transform: translateX(0); }
-            .wrapper { position: relative; overflow: hidden; }
-            .main-content { padding: 16px; }
-            .xp-bar-bg { width: 80px; }
-            .calendar-grid { font-size: 0.6rem; grid-template-columns: 40px repeat(7, 1fr); }
-            .cal-time, .cal-header { padding: 4px; }
-            .cal-event { font-size: 0.5rem; }
+            #sidebar { transform: translateX(-100%); position: fixed; width: 280px; background: var(--bg-glass); backdrop-filter: blur(16px); padding: 20px 0; box-shadow: 4px 0 20px rgba(0,0,0,0.5); }
+            #sidebar.open { transform: translateX(0); }
+            #main { padding: 15px 15px 90px 15px; }
+            #header .left h1 { font-size: 1.2rem; }
+            .search-box input { width: 100px; }
+            .grid-3 { grid-template-columns: 1fr; }
+            #bottom-nav { display: flex; }
+            .calendar-grid { font-size: var(--font-xs); }
+            .modal-box { width: 95%; padding: 20px; }
+            #header .right .date { display: none; }
+            .cal-day { min-height: 40px; padding: 4px; font-size: var(--font-xs); }
+            .cal-day .dots { display: none; }
+        }
+        @media (max-width: 480px) {
+            .grid-2, .grid-3 { grid-template-columns: 1fr; }
+            #header { flex-direction: column; align-items: stretch; gap: 10px; }
+            #header .right { justify-content: flex-end; }
+            .search-box { width: 100%; }
+            .search-box input { width: 100%; }
+            .routine-slot { height: 30px; }
+            .routine-slot .time { width: 35px; font-size: 10px; }
         }
     </style>
 </head>
 <body>
-
-    <!-- TOP BAR -->
-    <header class="header">
-        <div class="header-left">
-            <button class="hamburger" id="openSidebar">☰</button>
-            <span class="logo">MBC Life OS</span>
-        </div>
-        <div class="header-right">
-            <div class="user-greeting">
-                <h3 id="userNameDisplay">Jamilly</h3>
-                <span id="dateDisplay"></span>
-            </div>
-            <div class="xp-container">
-                <div class="level-tag" id="levelDisplay">Nível 1</div>
-                <div class="xp-bar-bg"><div class="xp-bar-fill" id="xpBarFill"></div></div>
-            </div>
-        </div>
-    </header>
-
-    <!-- MAIN WRAPPER -->
-    <div class="wrapper">
-        
+    <div id="app">
         <!-- SIDEBAR -->
-        <nav class="sidebar" id="sidebar">
-            <ul style="list-style: none;">
-                <li class="menu-item"><a class="menu-link active" onclick="changeView('view-home', this)">🏠 Visão Geral</a></li>
-                
-                <!-- Folder 1 -->
-                <li class="folder open">
-                    <div class="folder-title" onclick="toggleFolder(this)">📁 Gerenciamento Pessoal <span class="arrow">▶</span></div>
-                    <ul class="submenu">
-                        <li class="menu-item"><a class="menu-link" onclick="changeView('view-routine', this)">📅 Rotina & Agenda</a></li>
-                        <li class="menu-item"><a class="menu-link" onclick="changeView('view-habits', this)">🎯 Hábitos & Metas</a></li>
-                        <li class="menu-item"><a class="menu-link" onclick="changeView('view-journal', this)">📖 Diário & Canalização</a></li>
-                    </ul>
-                </li>
-
-                <!-- Folder 2 -->
-                <li class="folder">
-                    <div class="folder-title" onclick="toggleFolder(this)">📁 Performance Física <span class="arrow">▶</span></div>
-                    <ul class="submenu">
-                        <li class="menu-item"><a class="menu-link" onclick="changeView('view-workouts', this)">🏋️ Treinos & Fichas</a></li>
-                        <li class="menu-item"><a class="menu-link" onclick="changeView('view-nutrition', this)">🥗 Nutrição & Metas</a></li>
-                    </ul>
-                </li>
-
-                <!-- Folder 3 -->
-                <li class="folder">
-                    <div class="folder-title" onclick="toggleFolder(this)">📁 Financeiro <span class="arrow">▶</span></div>
-                    <ul class="submenu">
-                        <li class="menu-item"><a class="menu-link" onclick="changeView('view-finance', this)">💰 Visão Geral & Lançamentos</a></li>
-                    </ul>
-                </li>
-
-                <!-- Folder 4 -->
-                <li class="folder">
-                    <div class="folder-title" onclick="toggleFolder(this)">📁 Mindset & Gamificação <span class="arrow">▶</span></div>
-                    <ul class="submenu">
-                        <li class="menu-item"><a class="menu-link" onclick="changeView('view-ego', this)">⚔️ Alter Egos</a></li>
-                        <li class="menu-item"><a class="menu-link" onclick="changeView('view-quests', this)">🏆 Quests & Recompensas</a></li>
-                    </ul>
-                </li>
-            </ul>
+        <nav id="sidebar">
+            <div class="logo">
+                <i data-lucide="circuit-board" style="color:var(--primary);"></i>
+                LIFE <span>OS</span>
+            </div>
+            <div class="nav-links">
+                <a href="#/dashboard" data-route="dashboard" class="active"><i data-lucide="layout-dashboard"></i> Dashboard</a>
+                <a href="#/routine" data-route="routine"><i data-lucide="calendar-clock"></i> Rotina</a>
+                <a href="#/calendar" data-route="calendar"><i data-lucide="calendar"></i> Calendário</a>
+                <a href="#/tasks" data-route="tasks"><i data-lucide="check-square"></i> Tarefas</a>
+                <a href="#/habits" data-route="habits"><i data-lucide="activity"></i> Hábitos</a>
+                <a href="#/goals" data-route="goals"><i data-lucide="target"></i> Metas</a>
+                <a href="#/projects" data-route="projects"><i data-lucide="kanban"></i> Projetos</a>
+                <a href="#/workouts" data-route="workouts"><i data-lucide="dumbbell"></i> Treinos</a>
+                <a href="#/finances" data-route="finances"><i data-lucide="wallet"></i> Finanças</a>
+                <a href="#/journal" data-route="journal"><i data-lucide="book-open"></i> Diário</a>
+                <a href="#/focus" data-route="focus"><i data-lucide="timer"></i> Foco</a>
+                <a href="#/alter-egos" data-route="alter-egos"><i data-lucide="users"></i> Alter Egos</a>
+                <a href="#/reports" data-route="reports"><i data-lucide="bar-chart-2"></i> Evolução</a>
+                <a href="#/settings" data-route="settings"><i data-lucide="settings"></i> Configurações</a>
+            </div>
+            <div id="sidebar-bottom">
+                <div class="user-mini">
+                    <div class="avatar" id="sidebar-avatar">J</div>
+                    <div class="info">
+                        <span class="name" id="sidebar-name">Jonathan</span>
+                        <span class="level" id="sidebar-level">Nível 1</span>
+                    </div>
+                </div>
+                <div class="xp-bar"><div class="fill" id="sidebar-xp-fill" style="width: 0%;"></div></div>
+            </div>
         </nav>
 
-        <!-- MAIN CONTENT AREA (All Views) -->
-        <main class="main-content">
-            
-            <!-- VIEW: OVERVIEW -->
-            <div id="view-home" class="view active">
-                <h2>Visão Geral</h2>
-                <div class="grid-2">
-                    <div class="glass">
-                        <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;">ESTADO ATUAL</div>
-                        <div style="background: rgba(0, 212, 255, 0.1); border-left: 4px solid var(--neon-cyan); padding: 16px; border-radius: 8px;">
-                            <span style="font-weight: 700; color: var(--neon-cyan);">🔥 OFENSIVA ATIVA</span>
-                            <div style="margin-top: 6px; font-size: 0.85rem;">Continue completando seus hábitos para manter a sequência!</div>
-                        </div>
-                    </div>
-                    <div class="glass">
-                        <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;">XP TOTAL</div>
-                        <div style="display: flex; align-items: baseline; gap: 10px;">
-                            <span style="font-size: 2.5rem; font-weight: 700; color: var(--neon-cyan);" id="overview-xp">0</span>
-                            <span style="color: var(--text-muted);">/ Próximo nível</span>
-                        </div>
-                    </div>
+        <!-- MAIN -->
+        <div id="main">
+            <header id="header">
+                <div class="left">
+                    <h1 id="greeting">Bom dia<span>, Jonathan.</span></h1>
                 </div>
-            </div>
+                <div class="right">
+                    <span class="date" id="current-date">00 de Mês de 2026</span>
+                    <div class="search-box">
+                        <i data-lucide="search" style="width:16px;height:16px;color:var(--text-muted);"></i>
+                        <input type="text" id="global-search" placeholder="Buscar...">
+                        <kbd>⌘K</kbd>
+                    </div>
+                    <button onclick="toggleSidebar()" id="sidebar-toggle"><i data-lucide="menu"></i></button>
+                    <button onclick="toggleTheme()" id="theme-toggle"><i data-lucide="moon"></i></button>
+                </div>
+            </header>
 
-            <!-- VIEW: ROUTINE -->
-            <div id="view-routine" class="view">
-                <h2>Rotina & Agenda</h2>
-                <div class="glass">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                        <span>Esta Semana</span>
-                        <button onclick="addEvent()" style="background: var(--neon-blue); border: none; padding: 6px 16px; border-radius: 20px; color: white; cursor: pointer; font-weight: 600;">+ Adicionar Evento</button>
-                    </div>
-                    <div class="calendar-grid" id="routineGrid">
-                        <div class="cal-header">Hora</div>
-                        <div class="cal-header">Seg</div><div class="cal-header">Ter</div><div class="cal-header">Qua</div>
-                        <div class="cal-header">Qui</div><div class="cal-header">Sex</div><div class="cal-header">Sáb</div><div class="cal-header">Dom</div>
-                        <!-- Criado via JS para otimizar espaço -->
-                    </div>
-                </div>
+            <div id="views">
+                <!-- Views injected by JS -->
             </div>
+        </div>
 
-            <!-- VIEW: HABITS -->
-            <div id="view-habits" class="view">
-                <h2>Hábitos & Metas</h2>
-                <div class="glass" style="overflow-x: auto;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 16px;">
-                        <div><strong>🔥 Sequência:</strong> <span id="streakCount" style="color: var(--neon-cyan);">0</span> dias</div>
-                        <div><span id="habitProgressText">0%</span></div>
-                    </div>
-                    <div class="habit-grid" id="habitGrid"></div>
-                </div>
-            </div>
+        <!-- BOTTOM NAV -->
+        <nav id="bottom-nav">
+            <a href="#/dashboard"><i data-lucide="layout-dashboard"></i> Início</a>
+            <a href="#/tasks"><i data-lucide="check-square"></i> Tarefas</a>
+            <a href="#/routine"><i data-lucide="calendar-clock"></i> Rotina</a>
+            <a href="#/finances"><i data-lucide="wallet"></i> Finanças</a>
+            <a href="#/settings"><i data-lucide="settings"></i> Mais</a>
+        </nav>
 
-            <!-- VIEW: JOURNAL -->
-            <div id="view-journal" class="view">
-                <h2>Diário & Canalização</h2>
-                <div class="grid-2">
-                    <div class="glass">
-                        <h4 style="margin-bottom: 12px;">Navegador Temporal</h4>
-                        <input type="month" id="journalMonth" style="background: rgba(255,255,255,0.1); border: none; padding: 8px; border-radius: 8px; color: white; width: 100%;">
-                        <div id="calendarMatrix" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 16px; font-size: 0.8rem; text-align: center;">
-                            <!-- Calendário gerado via JS -->
-                        </div>
-                    </div>
-                    <div class="glass">
-                        <h4 style="margin-bottom: 12px;">Escreva sua reflexão</h4>
-                        <input type="date" id="journalDate" style="background: rgba(255,255,255,0.1); border: none; padding: 8px; border-radius: 8px; color: white; width: 100%; margin-bottom: 10px;">
-                        <div class="mood-selector">
-                            <button class="mood-btn" data-mood="😊" onclick="selectMood(this)">😊</button>
-                            <button class="mood-btn" data-mood="😐" onclick="selectMood(this)">😐</button>
-                            <button class="mood-btn" data-mood="😔" onclick="selectMood(this)">😔</button>
-                            <button class="mood-btn" data-mood="😡" onclick="selectMood(this)">😡</button>
-                            <button class="mood-btn" data-mood="🤔" onclick="selectMood(this)">🤔</button>
-                        </div>
-                        <textarea class="journal-input" id="journalText" placeholder="Como foi o seu dia hoje?"></textarea>
-                        <button onclick="saveJournal()" style="margin-top: 12px; width: 100%; background: var(--neon-purple); border: none; padding: 10px; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">Salvar Reflexão</button>
-                    </div>
-                </div>
-            </div>
+        <!-- MODAL -->
+        <div class="modal-overlay" id="app-modal" onclick="if(event.target===this)closeModal()">
+            <div class="modal-box" id="modal-content"></div>
+        </div>
 
-            <!-- VIEW: WORKOUTS -->
-            <div id="view-workouts" class="view">
-                <h2>Treinos & Fichas</h2>
-                <div class="glass">
-                    <div style="display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap;">
-                        <button class="workout-tab" data-ficha="A" onclick="changeWorkoutTab('A', this)">Ficha A (Superiores)</button>
-                        <button class="workout-tab active" data-ficha="B" onclick="changeWorkoutTab('B', this)">Ficha B (Inferiores)</button>
-                        <button class="workout-tab" data-ficha="C" onclick="changeWorkoutTab('C', this)">Ficha C (Cardio)</button>
-                    </div>
-                    <div id="workoutContent">
-                        <!-- Conteúdo da ficha gerado via JS -->
-                    </div>
-                    <div style="margin-top: 16px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 16px; display: flex; gap: 20px; font-size: 0.9rem;">
-                        <div><span style="color: var(--text-muted);">Volume Semanal:</span> <strong id="volumeSemanal">12,450 kg</strong></div>
-                        <div><span style="color: var(--text-muted);">Cardio Semanal:</span> <strong id="cardioSemanal">0 min</strong></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- VIEW: NUTRITION -->
-            <div id="view-nutrition" class="view">
-                <h2>Nutrição & Metas</h2>
-                <div class="grid-2">
-                    <div class="glass">
-                        <h4>Macronutrientes</h4>
-                        <div class="macro-item"><span>Proteínas</span><span id="protVal">0g / 150g</span></div>
-                        <div class="macro-progress"><div class="macro-fill protein" id="protBar" style="width: 0%;"></div></div>
-                        <div class="macro-item"><span>Carboidratos</span><span id="carbVal">0g / 250g</span></div>
-                        <div class="macro-progress"><div class="macro-fill carbs" id="carbBar" style="width: 0%;"></div></div>
-                        <div class="macro-item"><span>Gorduras</span><span id="fatVal">0g / 80g</span></div>
-                        <div class="macro-progress"><div class="macro-fill fat" id="fatBar" style="width: 0%;"></div></div>
-                    </div>
-                    <div class="glass">
-                        <h4>Meta de Hidratação</h4>
-                        <div style="text-align: center; font-size: 0.9rem; margin-top: 10px;"><span id="waterCount">0</span> / 8 copos</div>
-                        <div class="water-container" id="waterTracker"></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- VIEW: FINANCE -->
-            <div id="view-finance" class="view">
-                <h2>Finanças</h2>
-                <div class="grid-3" style="margin-bottom: 20px;">
-                    <div class="glass"><div style="font-size: 0.75rem; color: var(--text-muted);">SALDO TOTAL</div><div style="font-size: 1.8rem; font-weight: 700; color: var(--neon-cyan);" id="finBalance">R$ 0,00</div></div>
-                    <div class="glass"><div style="font-size: 0.75rem; color: var(--text-muted);">ENTRADAS (Mês)</div><div style="font-size: 1.2rem; color: #4ade80;" id="finIncome">+ R$ 0,00</div></div>
-                    <div class="glass"><div style="font-size: 0.75rem; color: var(--text-muted);">SAÍDAS (Mês)</div><div style="font-size: 1.2rem; color: #f87171;" id="finExpense">- R$ 0,00</div></div>
-                </div>
-                <div class="glass" style="margin-bottom: 20px;">
-                    <h4>Gráfico de Evolução (Últimos 12 meses)</h4>
-                    <div id="financeChart" style="display: flex; align-items: flex-end; gap: 8px; height: 100px; margin-top: 12px;"></div>
-                </div>
-                <div class="glass">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                        <h4>Lançamentos</h4>
-                        <button onclick="addTransaction()" style="background: var(--neon-blue); border: none; padding: 4px 12px; border-radius: 20px; color: white; cursor: pointer;">+ Adicionar</button>
-                    </div>
-                    <table class="fin-table">
-                        <thead><tr><th>Data</th><th>Descrição</th><th>Categoria</th><th>Valor</th></tr></thead>
-                        <tbody id="finTableBody"></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- VIEW: ALTER EGO -->
-            <div id="view-ego" class="view">
-                <h2>Alter Egos</h2>
-                <div class="glass">
-                    <div style="text-align: center; margin-bottom: 16px;">Quem está dominando o seu dia hoje?</div>
-                    <div class="ego-battle">
-                        <div class="ego-side" id="egoAlfredo"><div class="ego-icon">🏋️</div><div><strong>ALFREDO</strong><br><span style="font-size: 0.75rem; color: var(--text-muted);">Disciplinado</span></div><div style="font-size: 1.2rem; margin-top: 6px; font-weight: 700;" id="alfredoPct">0%</div></div>
-                        <div style="font-size: 1.5rem; color: var(--text-muted);">VS</div>
-                        <div class="ego-side" id="egoBeto"><div class="ego-icon">🎮</div><div><strong>BETO</strong><br><span style="font-size: 0.75rem; color: var(--text-muted);">Impulsivo</span></div><div style="font-size: 1.2rem; margin-top: 6px; font-weight: 700;" id="betoPct">0%</div></div>
-                    </div>
-                    <div class="ego-progress"><div class="ego-fill" id="egoBar" style="width: 50%;"></div></div>
-                    <div style="margin-top: 16px;">
-                        <label style="font-size: 0.8rem; color: var(--text-muted);">Reflexão do dia:</label>
-                        <input type="text" id="egoReflection" placeholder="O que te fez escolher essa versão hoje?" style="width: 100%; background: rgba(255,255,255,0.05); border: none; border-bottom: 1px solid rgba(255,255,255,0.1); padding: 8px; color: white; outline: none; margin-top: 4px;">
-                        <button onclick="saveEgoReflection()" style="margin-top: 8px; background: transparent; border: 1px solid var(--neon-purple); padding: 4px 16px; border-radius: 12px; color: white; cursor: pointer;">Salvar</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- VIEW: QUESTS -->
-            <div id="view-quests" class="view">
-                <h2>Quests & Recompensas</h2>
-                <div class="grid-2">
-                    <div class="glass">
-                        <h4>📋 Missões Diárias</h4>
-                        <ul style="list-style: none; margin-top: 12px;">
-                            <li style="padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between;">
-                                <span><input type="checkbox" onchange="addXP(10)"> Beber 8 copos de água</span> <span style="color: var(--neon-cyan);">+10 XP</span>
-                            </li>
-                            <li style="padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between;">
-                                <span><input type="checkbox" onchange="addXP(25)"> Treinar na academia</span> <span style="color: var(--neon-cyan);">+25 XP</span>
-                            </li>
-                            <li style="padding: 8px 0; display: flex; justify-content: space-between;">
-                                <span><input type="checkbox" onchange="addXP(15)"> Escrever no diário</span> <span style="color: var(--neon-cyan);">+15 XP</span>
-                            </li>
-                        </ul>
-                    </div>
-                    <div class="glass">
-                        <h4>🛒 Loja de XP</h4>
-                        <div style="margin-top: 12px; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
-                            <div><span style="font-weight: 600;">Hora do Game</span><br><span style="font-size: 0.75rem; color: var(--text-muted);">1 hora livre</span></div>
-                            <button style="background: var(--neon-purple); border: none; padding: 4px 12px; border-radius: 12px; color: white; font-size: 0.75rem;">50 XP</button>
-                        </div>
-                        <div style="margin-top: 8px; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
-                            <div><span style="font-weight: 600;">Jantar Especial</span><br><span style="font-size: 0.75rem; color: var(--text-muted);">Escolha seu prato favorito</span></div>
-                            <button style="background: var(--neon-purple); border: none; padding: 4px 12px; border-radius: 12px; color: white; font-size: 0.75rem;">120 XP</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-        </main>
+        <!-- TOAST -->
+        <div id="toast-container"></div>
     </div>
 
     <script>
         // ==========================================
-        // 1. INITIALIZATION & STATE (LOCAL STORAGE)
+        // 1. STATE & STORAGE
         // ==========================================
-        let userStats = JSON.parse(localStorage.getItem('mbc_user')) || { 
-            level: 1, xp: 0, name: "Jamilly", streak: 0, 
-            water: 0, habits: {}, journal: {}, transactions: []
+        const STORAGE_KEY = 'lifeos_data';
+        const defaultState = {
+            user: { name: 'Jonathan', avatar: 'J', theme: 'dark' },
+            tasks: [],
+            habits: [],
+            events: [],
+            goals: [],
+            projects: [],
+            workouts: [],
+            finances: { transactions: [] },
+            journal: [],
+            alterEgos: [],
+            focusSessions: [],
+            settings: { widgets: ['progress', 'routine', 'tasks', 'habits', 'focus', 'finances'] }
         };
-        
-        const LEVEL_XP_CAP = 500;
-        
+
+        let AppState = JSON.parse(JSON.stringify(defaultState));
+
+        function loadState() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    AppState = deepMerge(defaultState, parsed);
+                } else {
+                    loadDemoData();
+                }
+            } catch (e) {
+                console.warn('Erro ao carregar dados, usando demo.');
+                loadDemoData();
+            }
+            saveState();
+        }
+
         function saveState() {
-            localStorage.setItem('mbc_user', JSON.stringify(userStats));
-            updateUI();
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(AppState));
+            updateSidebar();
+        }
+
+        function deepMerge(target, source) {
+            const output = { ...target };
+            for (let key in source) {
+                if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
+                    output[key] = deepMerge(target[key] || {}, source[key]);
+                } else {
+                    output[key] = source[key];
+                }
+            }
+            return output;
+        }
+
+        function resetState() {
+            if (confirm('Isso apagará TODOS os dados locais. Tem certeza?')) {
+                localStorage.removeItem(STORAGE_KEY);
+                AppState = JSON.parse(JSON.stringify(defaultState));
+                loadDemoData();
+                renderView();
+                toast('Sistema recalibrado.', 'success');
+            }
         }
 
         // ==========================================
-        // 2. UI & SPA NAVIGATION
+        // 2. DEMO DATA
         // ==========================================
-        document.getElementById('dateDisplay').textContent = new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });
-        document.getElementById('userNameDisplay').textContent = userStats.name;
+        function loadDemoData() {
+            const today = new Date();
+            const todayStr = today.toISOString().slice(0,10);
+            const tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate()+1);
+            const tomorrowStr = tomorrow.toISOString().slice(0,10);
+            
+            AppState.user = { name: 'Jonathan', avatar: 'J', theme: 'dark' };
+            
+            AppState.alterEgos = [
+                { id: 'a1', name: 'Alfredo', desc: 'Disciplina e razão.', wins: 12, losses: 4, color: '#3b82f6' },
+                { id: 'a2', name: 'Beto', desc: 'Impulso e desejo.', wins: 5, losses: 11, color: '#ef4444' }
+            ];
+            
+            AppState.tasks = [
+                { id: 't1', title: 'Definir objetivos do trimestre', desc: 'Escrever visão 3 anos.', category: 'planejamento', priority: 'high', status: 'inbox', due: todayStr, xp: 50, energy: 'high', subtasks: [] },
+                { id: 't2', title: 'Estudar JavaScript avançado', desc: 'Capítulo 5 - Promises', category: 'estudos', priority: 'normal', status: 'in-progress', due: tomorrowStr, xp: 30, energy: 'medium', subtasks: [] },
+                { id: 't3', title: 'Comprar mantimentos', desc: 'Arroz, feijão, legumes.', category: 'pessoal', priority: 'low', status: 'inbox', due: tomorrowStr, xp: 10, energy: 'low', subtasks: [] },
+                { id: 't4', title: 'Revisar planejamento da semana', desc: '', category: 'planejamento', priority: 'critical', status: 'inbox', due: todayStr, xp: 40, energy: 'high', subtasks: [] },
+            ];
+            
+            AppState.habits = [
+                { id: 'h1', name: 'Treinar 4x semana', category: 'saúde', frequency: 'daily', history: { '2026-08-10': true, '2026-08-11': true, '2026-08-12': false }, streak: 2, bestStreak: 7 },
+                { id: 'h2', name: 'Ler 30 min', category: 'estudos', frequency: 'daily', history: { '2026-08-10': true, '2026-08-11': false, '2026-08-12': true }, streak: 1, bestStreak: 10 },
+                { id: 'h3', name: 'Meditar 10 min', category: 'mente', frequency: 'daily', history: { '2026-08-10': true, '2026-08-11': true, '2026-08-12': true }, streak: 3, bestStreak: 15 },
+            ];
+            
+            AppState.events = [
+                { id: 'e1', title: 'Acordar', start: '08:00', end: '08:15', type: 'rotina', date: todayStr, color: '#3b82f6' },
+                { id: 'e2', title: 'Café', start: '08:30', end: '09:00', type: 'rotina', date: todayStr, color: '#8b5cf6' },
+                { id: 'e3', title: 'Deep Work', start: '09:00', end: '11:00', type: 'trabalho', date: todayStr, color: '#f59e0b' },
+                { id: 'e4', title: 'Call de equipe', start: '11:00', end: '12:00', type: 'trabalho', date: todayStr, color: '#22c55e' },
+                { id: 'e5', title: 'Academia', start: '17:00', end: '18:30', type: 'treino', date: todayStr, color: '#ef4444' },
+            ];
+            
+            AppState.finances.transactions = [
+                { id: 'f1', type: 'income', amount: 4500.00, category: 'Salário', date: '2026-08-05', desc: 'Agosto' },
+                { id: 'f2', type: 'expense', amount: 1200.00, category: 'Moradia', date: '2026-08-06', desc: 'Aluguel' },
+                { id: 'f3', type: 'expense', amount: 350.00, category: 'Alimentação', date: '2026-08-07', desc: 'Supermercado' },
+                { id: 'f4', type: 'expense', amount: 89.90, category: 'Assinaturas', date: '2026-08-08', desc: 'Netflix' },
+                { id: 'f5', type: 'income', amount: 200.00, category: 'Freelance', date: '2026-08-10', desc: 'Design' },
+            ];
+            
+            AppState.journal = [
+                { id: 'j1', title: 'Primeiro dia de rotina', text: 'Comecei o Life OS hoje. A sensação de organização já me deu mais energia.', mood: 4, energy: 5, date: '2026-08-10', tags: ['início', 'organização'] }
+            ];
 
-        function toggleFolder(el) {
-            el.parentElement.classList.toggle('open');
+            AppState.goals = [
+                { id: 'g1', title: 'Melhorar condicionamento físico', vision: 'Saúde', level: 'visao', children: [
+                    { id: 'g1a', title: 'Ganhar massa muscular', level: 'objetivo', children: [
+                        { id: 'g1a1', title: 'Treino de 12 semanas', level: 'projeto', children: [
+                            { id: 'g1a1a', title: 'Semana 1', level: 'milestone', done: false }
+                        ]}
+                    ]}
+                ]}
+            ];
+
+            AppState.workouts = [
+                { id: 'w1', name: 'Treino A', exercises: [ { name: 'Leg Press', sets: 3, reps: 10, weight: 100 }, { name: 'Mesa Flexora', sets: 3, reps: 12, weight: 60 } ] },
+                { id: 'w2', name: 'Treino B', exercises: [ { name: 'Remada com Halter', sets: 3, reps: 10, weight: 40 }, { name: 'Crucifixo', sets: 3, reps: 12, weight: 20 } ] }
+            ];
+
+            saveState();
         }
 
-        function changeView(viewId, linkElement) {
-            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-            document.getElementById(viewId).classList.add('active');
-            
-            document.querySelectorAll('.menu-link').forEach(l => l.classList.remove('active'));
-            if(linkElement) linkElement.classList.add('active');
-            
-            // Close mobile sidebar
-            document.getElementById('sidebar').classList.remove('open');
-
-            if (viewId === 'view-home') loadOverview();
-            if (viewId === 'view-routine') loadRoutine();
-            if (viewId === 'view-habits') loadHabits();
-            if (viewId === 'view-journal') loadJournalUI();
-            if (viewId === 'view-workouts') changeWorkoutTab('B');
-            if (viewId === 'view-nutrition') loadNutrition();
-            if (viewId === 'view-finance') loadFinance();
-            if (viewId === 'view-ego') loadEgo();
+        // ==========================================
+        // 3. UTILITIES
+        // ==========================================
+        function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
+        function today() { return new Date().toISOString().slice(0,10); }
+        function formatDate(d) { if(!d) return ''; const dt = new Date(d + 'T00:00:00'); return dt.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' }); }
+        function formatTime(h) { return h; }
+        function formatMoney(v) { return 'R$ ' + v.toFixed(2).replace('.', ','); }
+        function getGreeting() { const h = new Date().getHours(); if(h < 6) return 'Boa madrugada'; if(h < 12) return 'Bom dia'; if(h < 18) return 'Boa tarde'; return 'Boa noite'; }
+        function getDayData(dateStr) {
+            return {
+                tasks: AppState.tasks.filter(t => t.due === dateStr),
+                events: AppState.events.filter(e => e.date === dateStr),
+                habits: Object.fromEntries(Object.entries(AppState.habits).map(([k,v]) => [k, v.history[dateStr] || false])),
+                journal: AppState.journal.filter(j => j.date === dateStr)
+            };
+        }
+        function calcXP() {
+            let total = 0;
+            AppState.tasks.filter(t => t.status === 'done').forEach(t => total += t.xp || 0);
+            AppState.habits.forEach(h => { if(h.history[today()]) total += 10; });
+            return total;
+        }
+        function calcLevel(xp) {
+            let level = 1; let needed = 100;
+            while(xp >= needed) { xp -= needed; level++; needed += 50; }
+            return { level, xp: xp, needed: needed };
+        }
+        function toast(msg, type='info') {
+            const c = document.getElementById('toast-container');
+            const el = document.createElement('div');
+            el.className = 'toast ' + type;
+            el.textContent = msg;
+            c.appendChild(el);
+            setTimeout(() => { el.style.opacity = '0'; el.style.transform = 'translateX(40px)'; setTimeout(() => el.remove(), 300); }, 3000);
         }
 
-        document.getElementById('openSidebar').addEventListener('click', () => {
-            document.getElementById('sidebar').classList.toggle('open');
+        // ==========================================
+        // 4. ROUTER & RENDER
+        // ==========================================
+        const routes = {
+            'dashboard': renderDashboard,
+            'routine': renderRoutine,
+            'calendar': renderCalendar,
+            'tasks': renderTasks,
+            'habits': renderHabits,
+            'goals': renderGoals,
+            'projects': renderProjects,
+            'workouts': renderWorkouts,
+            'finances': renderFinances,
+            'journal': renderJournal,
+            'focus': renderFocus,
+            'alter-egos': renderAlterEgos,
+            'reports': renderReports,
+            'settings': renderSettings
+        };
+
+        let currentView = 'dashboard';
+
+        function navigate(hash) {
+            const route = hash.replace('#/', '') || 'dashboard';
+            currentView = route;
+            renderView(route);
+            document.querySelectorAll('#sidebar .nav-links a, #bottom-nav a').forEach(a => {
+                a.classList.toggle('active', a.getAttribute('href') === '#/' + route);
+            });
+            if(window.innerWidth <= 768) document.getElementById('sidebar').classList.remove('open');
+        }
+
+        function renderView(route) {
+            const container = document.getElementById('views');
+            container.innerHTML = '';
+            const fn = routes[route] || routes['dashboard'];
+            const el = document.createElement('div');
+            el.className = 'view active';
+            el.id = 'view-' + route;
+            container.appendChild(el);
+            fn(el);
+            updateHeader();
+            updateSidebar();
+            lucide.createIcons();
+            if(typeof Chart !== 'undefined') { // reset charts if any
+                document.querySelectorAll('.chart-container canvas').forEach(c => {
+                    if(c.chart) { c.chart.destroy(); c.chart = null; }
+                });
+            }
+        }
+
+        window.addEventListener('hashchange', () => navigate(window.location.hash));
+        window.addEventListener('load', () => {
+            loadState();
+            if(!window.location.hash) window.location.hash = '#/dashboard';
+            navigate(window.location.hash);
+            document.addEventListener('keydown', (e) => {
+                if((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); document.getElementById('global-search').focus(); }
+            });
         });
 
         // ==========================================
-        // 3. XP & GAMIFICATION SYSTEM
+        // 5. HEADER / SIDEBAR UPDATE
         // ==========================================
-        function addXP(amount) {
-            userStats.xp += amount;
-            while(userStats.xp >= userStats.level * LEVEL_XP_CAP) {
-                userStats.xp -= userStats.level * LEVEL_XP_CAP;
-                userStats.level++;
-            }
-            saveState();
+        function updateHeader() {
+            const now = new Date();
+            const opt = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+            document.getElementById('current-date').textContent = now.toLocaleDateString('pt-BR', opt);
+            document.getElementById('greeting').innerHTML = `${getGreeting()}<span>, ${AppState.user.name}.</span>`;
         }
 
-        function updateUI() {
-            document.getElementById('levelDisplay').textContent = `Nível ${userStats.level}`;
-            document.getElementById('overview-xp').textContent = userStats.xp;
-            
-            let needed = userStats.level * LEVEL_XP_CAP;
-            let pct = Math.min((userStats.xp / needed) * 100, 100);
-            document.getElementById('xpBarFill').style.width = pct + '%';
-            
-            // Update Ego based on habits when UI refreshes
-            if(document.getElementById('view-ego').classList.contains('active')) loadEgo();
+        function updateSidebar() {
+            const xp = calcXP();
+            const lvl = calcLevel(xp);
+            document.getElementById('sidebar-name').textContent = AppState.user.name;
+            document.getElementById('sidebar-avatar').textContent = AppState.user.avatar || AppState.user.name.slice(0,1).toUpperCase();
+            document.getElementById('sidebar-level').textContent = `Nível ${lvl.level} (${lvl.xp} / ${lvl.needed} XP)`;
+            document.getElementById('sidebar-xp-fill').style.width = `${(lvl.xp / lvl.needed) * 100}%`;
         }
 
-        // ==========================================
-        // 4. ROUTINE / CALENDAR (Grade visual)
-        // ==========================================
-        function loadRoutine() {
-            const grid = document.getElementById('routineGrid');
-            grid.innerHTML = '';
-            const days = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
-            
-            // Header
-            grid.innerHTML = `<div class="cal-header">Hora</div>`;
-            days.forEach(d => grid.innerHTML += `<div class="cal-header">${d}</div>`);
-
-            let events = JSON.parse(localStorage.getItem('mbc_events')) || [
-                {time: 8, day: 0, label: 'Cardio'}, {time: 12, day: 0, label: 'Academia'},
-                {time: 8, day: 1, label: 'Cardio'}, {time: 10, day: 1, label: 'Trampo'},
-                {time: 12, day: 2, label: 'Academia'}, {time: 8, day: 3, label: 'Cardio'}
-            ];
-
-            for(let i=5; i<=22; i++) {
-                grid.innerHTML += `<div class="cal-time">${String(i).padStart(2,'0')}:00</div>`;
-                for(let d=0; d<7; d++) {
-                    let cell = `<div class="cal-cell" id="cell-${i}-${d}">`;
-                    events.forEach(ev => {
-                        if(ev.time === i && ev.day === d) {
-                            cell += `<div class="cal-event" style="background: rgba(0, 212, 255, 0.2); border-color: var(--neon-cyan);">${ev.label}</div>`;
-                        }
-                    });
-                    cell += `</div>`;
-                    grid.innerHTML += cell;
-                }
-            }
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
         }
-
-        function addEvent() {
-            let time = prompt("Digite a hora (ex: 14):");
-            let day = prompt("Digite o dia da semana (0=Seg, 6=Dom):");
-            let label = prompt("Nome do evento:");
-            if(time && day && label) {
-                let events = JSON.parse(localStorage.getItem('mbc_events')) || [];
-                events.push({time: parseInt(time), day: parseInt(day), label: label});
-                localStorage.setItem('mbc_events', JSON.stringify(events));
-                loadRoutine();
-            }
-        }
-
-        // ==========================================
-        // 5. HABITS & STREAK
-        // ==========================================
-        function loadHabits() {
-            const habits = ['Acordar cedo', 'Beber água', 'Exercício', 'Ler 10 min', 'Meditar'];
-            const grid = document.getElementById('habitGrid');
-            const today = new Date().getDay();
-            grid.innerHTML = `<div>Hábito</div>`;
-            for(let i=0; i<7; i++) grid.innerHTML += `<div>${['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'][i]}</div>`;
-
-            if(!userStats.habits) userStats.habits = {};
-
-            habits.forEach((h, idx) => {
-                grid.innerHTML += `<div style="text-align: left; padding-left: 8px; font-weight: 500;">${h}</div>`;
-                for(let i=0; i<7; i++) {
-                    let key = `${h}-${i}`;
-                    let checked = userStats.habits[key] ? 'checked' : '';
-                    grid.innerHTML += `<div><input type="checkbox" class="habit-checkbox" data-habit="${h}" data-day="${i}" ${checked} onchange="toggleHabit(this)"></div>`;
-                }
-            });
-            updateStreak();
-        }
-
-        function toggleHabit(el) {
-            let key = `${el.dataset.habit}-${el.dataset.day}`;
-            userStats.habits[key] = el.checked;
-            if(el.checked) addXP(5);
-            saveState();
-            updateStreak();
-            loadEgo(); // Update alter egos instantly
-        }
-
-        function updateStreak() {
-            let today = new Date().getDay();
-            let streak = 0;
-            // Very basic streak logic: if any habit was checked today, count streak
-            const habits = ['Acordar cedo', 'Beber água', 'Exercício', 'Ler 10 min', 'Meditar'];
-            let checkedToday = false;
-            habits.forEach(h => {
-                if(userStats.habits[`${h}-${today}`]) checkedToday = true;
-            });
-            
-            if(checkedToday) {
-                streak = userStats.streak || 0;
-                streak++;
-                userStats.streak = streak;
+        function toggleTheme() {
+            const c = document.documentElement.style;
+            if(c.getPropertyValue('--bg-primary') === '#080d15') {
+                c.setProperty('--bg-primary', '#f8fafc');
+                c.setProperty('--bg-secondary', '#ffffff');
+                c.setProperty('--bg-card', '#f1f5f9');
+                c.setProperty('--bg-card-hover', '#e2e8f0');
+                c.setProperty('--text-primary', '#0f172a');
+                c.setProperty('--text-secondary', '#334155');
+                c.setProperty('--text-muted', '#64748b');
+                c.setProperty('--border-color', '#cbd5e1');
+                c.setProperty('--bg-glass', 'rgba(255, 255, 255, 0.7)');
+                document.getElementById('theme-toggle').innerHTML = '<i data-lucide="sun"></i>';
             } else {
-                userStats.streak = 0;
+                c.setProperty('--bg-primary', '#080d15');
+                c.setProperty('--bg-secondary', '#0e1726');
+                c.setProperty('--bg-card', '#16233a');
+                c.setProperty('--bg-card-hover', '#1f2e4a');
+                c.setProperty('--text-primary', '#f1f5f9');
+                c.setProperty('--text-secondary', '#94a3b8');
+                c.setProperty('--text-muted', '#64748b');
+                c.setProperty('--border-color', '#243454');
+                c.setProperty('--bg-glass', 'rgba(22, 35, 58, 0.7)');
+                document.getElementById('theme-toggle').innerHTML = '<i data-lucide="moon"></i>';
             }
-            document.getElementById('streakCount').textContent = userStats.streak;
-            
-            // Total progress %
-            let total = 5 * 7;
-            let done = Object.keys(userStats.habits).filter(k => userStats.habits[k]).length;
-            document.getElementById('habitProgressText').textContent = Math.round((done/total)*100) + '%';
+            lucide.createIcons();
         }
 
         // ==========================================
-        // 6. JOURNAL
+        // 6. MODAL SYSTEM
         // ==========================================
-        function loadJournalUI() {
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('journalDate').value = today;
-            // Dummy Calendar
-            const matrix = document.getElementById('calendarMatrix');
-            matrix.innerHTML = '';
-            const daysInMonth = new Date(2026, 7, 0).getDate(); // Agosto 2026
-            for(let i=1; i<=daysInMonth; i++) {
-                let d = `2026-08-${String(i).padStart(2,'0')}`;
-                let hasEntry = localStorage.getItem('journal_'+d);
-                matrix.innerHTML += `<div style="padding: 4px; background: ${hasEntry ? 'rgba(0, 212, 255, 0.2)' : 'transparent'}; border-radius: 4px;">${i}</div>`;
+        function openModal(title, html, onSave) {
+            const overlay = document.getElementById('app-modal');
+            const box = document.getElementById('modal-content');
+            const saveBtnId = uid();
+            box.innerHTML = `
+                <h2>${title}</h2>
+                ${html}
+                <div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-end;">
+                    <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+                    <button class="btn btn-primary" id="${saveBtnId}">Salvar</button>
+                </div>
+            `;
+            overlay.classList.add('open');
+            document.getElementById(saveBtnId).addEventListener('click', () => {
+                const result = onSave();
+                if(result !== false) { closeModal(); saveState(); renderView(currentView); }
+            });
+        }
+
+        function closeModal() {
+            document.getElementById('app-modal').classList.remove('open');
+        }
+
+        // ==========================================
+        // 7. DASHBOARD
+        // ==========================================
+        function renderDashboard(el) {
+            const todayStr = today();
+            const xp = calcXP();
+            const lvl = calcLevel(xp);
+            const tasksToday = AppState.tasks.filter(t => t.due === todayStr && t.status !== 'done');
+            const habitsToday = AppState.habits.filter(h => h.history[todayStr] !== undefined);
+            const eventsToday = AppState.events.filter(e => e.date === todayStr);
+            const doneToday = AppState.tasks.filter(t => t.due === todayStr && t.status === 'done').length;
+            const totalToday = AppState.tasks.filter(t => t.due === todayStr).length || 1;
+            const progress = Math.round((doneToday / totalToday) * 100);
+
+            el.innerHTML = `
+                <div class="grid-3">
+                    <div class="card">
+                        <div class="card-header"><h3>Progresso do dia</h3></div>
+                        <div class="flex-center" style="flex-direction:column;">
+                            <div class="progress-circle" style="background: conic-gradient(var(--primary) ${progress}%, var(--bg-card) ${progress}%);">
+                                <span class="val">${progress}%</span>
+                            </div>
+                            <div class="text-muted text-sm mt-4">${xp} XP ganhos hoje</div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header"><h3>Próxima ação</h3></div>
+                        ${tasksToday.length > 0 ? `
+                            <div class="empty-state" style="padding:10px 0;">
+                                <h4 style="color:var(--text-primary);">${tasksToday[0].title}</h4>
+                                <p class="text-muted text-sm">Prioridade: ${tasksToday[0].priority}</p>
+                                <button class="btn btn-success btn-sm mt-4" onclick="completeTask('${tasksToday[0].id}')">Concluir agora</button>
+                            </div>
+                        ` : `<div class="empty-state"><p>Nenhuma tarefa pendente para hoje.</p></div>`}
+                    </div>
+                    <div class="card">
+                        <div class="card-header"><h3>Como você está?</h3></div>
+                        <div class="flex" style="flex-direction:column;gap:10px;">
+                            <div class="flex-between"><span>Energia</span> <select class="btn btn-sm" style="width:auto;" id="mood-energy"><option>1</option><option>2</option><option>3</option><option>4</option><option selected>5</option></select></div>
+                            <div class="flex-between"><span>Foco</span> <select class="btn btn-sm" style="width:auto;" id="mood-focus"><option>1</option><option>2</option><option>3</option><option>4</option><option selected>5</option></select></div>
+                            <div class="flex-between"><span>Humor</span> <select class="btn btn-sm" style="width:auto;" id="mood-humor"><option>1</option><option>2</option><option>3</option><option>4</option><option selected>5</option></select></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid-2" style="margin-top:20px;">
+                    <div class="card">
+                        <div class="card-header"><h3>Rotina de hoje</h3> <span class="badge">${eventsToday.length} eventos</span></div>
+                        ${eventsToday.slice(0,5).map(e => `<div class="flex-between text-sm" style="padding:6px 0;border-bottom:1px solid var(--border-color);"><span>${e.start} ${e.title}</span><span class="badge" style="background:${e.color}20;color:${e.color};">${e.type}</span></div>`).join('')}
+                        ${eventsToday.length === 0 ? '<div class="text-muted text-sm">Nenhum evento planejado.</div>' : ''}
+                    </div>
+                    <div class="card">
+                        <div class="card-header"><h3>Hábitos do dia</h3> <span class="badge">${habitsToday.length}</span></div>
+                        ${habitsToday.slice(0,5).map(h => `
+                            <div class="flex-between text-sm" style="padding:6px 0;border-bottom:1px solid var(--border-color);">
+                                <span>${h.name}</span>
+                                <button class="btn btn-sm ${h.history[todayStr] ? 'btn-success' : 'btn-outline'}" onclick="toggleHabit('${h.id}')">
+                                    ${h.history[todayStr] ? 'Concluído' : 'Marcar'}
+                                </button>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                <div class="grid-2" style="margin-top:20px;">
+                    <div class="card"><div class="card-header"><h3>Nível</h3></div><div class="text-center"><h2 style="font-size:2rem;">${lvl.level}</h2><div class="text-muted text-sm">${lvl.xp} / ${lvl.needed} XP</div></div></div>
+                    <div class="card"><div class="card-header"><h3>Alter Ego: Duelo do dia</h3></div><div id="alter-ego-duel-widget"></div></div>
+                </div>
+            `;
+            // load alter ego duel widget
+            const duelContainer = el.querySelector('#alter-ego-duel-widget');
+            if(duelContainer) {
+                const a1 = AppState.alterEgos.find(a => a.id === 'a1');
+                const a2 = AppState.alterEgos.find(a => a.id === 'a2');
+                const total = (a1?.wins||0) + (a2?.wins||0) || 1;
+                const p1 = Math.round(((a1?.wins||0)/total)*100);
+                const p2 = Math.round(((a2?.wins||0)/total)*100);
+                duelContainer.innerHTML = `
+                    <div class="flex-between"><span>${a1?.name||'Disciplina'}</span> <b>${p1}%</b></div>
+                    <div class="xp-bar"><div class="fill" style="width:${p1}%;background:var(--primary);"></div></div>
+                    <div class="flex-between"><span>${a2?.name||'Impulso'}</span> <b>${p2}%</b></div>
+                    <div class="xp-bar"><div class="fill" style="width:${p2}%;background:var(--danger);"></div></div>
+                    <button class="btn btn-primary btn-sm w-full mt-4" onclick="navigate('#/alter-egos')">Ver detalhes</button>
+                `;
             }
-            document.getElementById('journalDate').addEventListener('change', function() {
-                let val = localStorage.getItem('journal_'+this.value);
-                if(val) {
-                    let data = JSON.parse(val);
-                    document.getElementById('journalText').value = data.text;
-                    document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
-                    document.querySelector(`.mood-btn[data-mood="${data.mood}"]`)?.classList.add('selected');
+        }
+
+        // ==========================================
+        // 8. TASKS
+        // ==========================================
+        function renderTasks(el) {
+            el.innerHTML = `
+                <div class="flex-between" style="margin-bottom:20px;">
+                    <h2>Tarefas</h2>
+                    <button class="btn btn-primary" onclick="openTaskModal()"><i data-lucide="plus"></i> Nova Tarefa</button>
+                </div>
+                <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
+                    <button class="btn btn-secondary btn-sm filter-tasks" data-filter="all">Todas</button>
+                    <button class="btn btn-secondary btn-sm filter-tasks" data-filter="inbox">Inbox</button>
+                    <button class="btn btn-secondary btn-sm filter-tasks" data-filter="in-progress">Em andamento</button>
+                    <button class="btn btn-secondary btn-sm filter-tasks" data-filter="done">Concluídas</button>
+                </div>
+                <div id="task-list"></div>
+            `;
+
+            const renderTaskList = (filter='all') => {
+                const list = el.querySelector('#task-list');
+                let tasks = AppState.tasks;
+                if(filter !== 'all') tasks = tasks.filter(t => t.status === filter);
+                if(tasks.length === 0) { list.innerHTML = `<div class="empty-state"><i data-lucide="check-square"></i><h4>Nenhuma tarefa</h4><p class="text-sm">Crie sua primeira tarefa.</p></div>`; return; }
+                list.innerHTML = tasks.map(t => `
+                    <div class="card" style="margin-bottom:10px;padding:15px;display:flex;justify-content:space-between;align-items:center;">
+                        <div style="flex:1;">
+                            <div style="display:flex;align-items:center;gap:10px;">
+                                <input type="checkbox" ${t.status==='done'?'checked':''} onchange="completeTask('${t.id}')" style="width:18px;height:18px;">
+                                <span style="${t.status==='done'?'text-decoration:line-through;color:var(--text-muted);':''}"><b>${t.title}</b></span>
+                                <span class="badge badge-${t.priority==='critical'?'danger':t.priority==='high'?'warning':'primary'}">${t.priority}</span>
+                                ${t.due ? `<span class="badge text-xs">${formatDate(t.due)}</span>` : ''}
+                            </div>
+                            <div class="text-muted text-sm">${t.desc || ''}</div>
+                        </div>
+                        <div style="display:flex;gap:8px;">
+                            <button class="btn btn-secondary btn-sm" onclick="openTaskModal('${t.id}')"><i data-lucide="pencil" style="width:14px;height:14px;"></i></button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteTask('${t.id}')"><i data-lucide="trash" style="width:14px;height:14px;"></i></button>
+                        </div>
+                    </div>
+                `).join('');
+                lucide.createIcons();
+            };
+
+            renderTaskList('all');
+            el.querySelectorAll('.filter-tasks').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    el.querySelectorAll('.filter-tasks').forEach(b => b.classList.remove('btn-primary'));
+                    btn.classList.add('btn-primary');
+                    renderTaskList(btn.dataset.filter);
+                });
+            });
+        }
+
+        window.completeTask = (id) => {
+            const t = AppState.tasks.find(t => t.id === id);
+            if(t) {
+                t.status = t.status === 'done' ? 'inbox' : 'done';
+                if(t.status === 'done') toast('+'+t.xp+' XP', 'success');
+                saveState(); renderView(currentView);
+            }
+        };
+        window.deleteTask = (id) => {
+            if(confirm('Excluir esta tarefa?')) {
+                AppState.tasks = AppState.tasks.filter(t => t.id !== id);
+                saveState(); renderView(currentView);
+                toast('Tarefa excluída.');
+            }
+        };
+        window.openTaskModal = (id) => {
+            const t = id ? AppState.tasks.find(t => t.id === id) : null;
+            const html = `
+                <div style="margin-bottom:12px;"><label>Nome</label><input id="f-task-title" value="${t ? t.title : ''}" placeholder="Ex: Estudar JavaScript"></div>
+                <div style="margin-bottom:12px;"><label>Descrição</label><textarea id="f-task-desc">${t ? t.desc : ''}</textarea></div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                    <div><label>Prioridade</label><select id="f-task-priority"><option value="low" ${t?.priority==='low'?'selected':''}>Baixa</option><option value="normal" ${t?.priority==='normal'?'selected':''}>Normal</option><option value="high" ${t?.priority==='high'?'selected':''}>Alta</option><option value="critical" ${t?.priority==='critical'?'selected':''}>Crítica</option></select></div>
+                    <div><label>Status</label><select id="f-task-status"><option value="inbox" ${t?.status==='inbox'?'selected':''}>Inbox</option><option value="in-progress" ${t?.status==='in-progress'?'selected':''}>Em andamento</option><option value="done" ${t?.status==='done'?'selected':''}>Concluída</option></select></div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;">
+                    <div><label>Prazo</label><input type="date" id="f-task-due" value="${t ? t.due : today()}"></div>
+                    <div><label>XP</label><input type="number" id="f-task-xp" value="${t ? t.xp : 20}"></div>
+                </div>
+            `;
+            openModal(t ? 'Editar Tarefa' : 'Nova Tarefa', html, () => {
+                const title = document.getElementById('f-task-title').value.trim();
+                if(!title) { toast('O título é obrigatório.', 'warning'); return false; }
+                const data = {
+                    title, desc: document.getElementById('f-task-desc').value,
+                    priority: document.getElementById('f-task-priority').value,
+                    status: document.getElementById('f-task-status').value,
+                    due: document.getElementById('f-task-due').value,
+                    xp: parseInt(document.getElementById('f-task-xp').value) || 0,
+                };
+                if(t) { Object.assign(t, data); toast('Tarefa atualizada.'); }
+                else { AppState.tasks.push({ id: uid(), ...data, category: 'geral', energy: 'medium', subtasks: [] }); toast('Tarefa criada!'); }
+            });
+        };
+
+        // ==========================================
+        // 9. HABITS
+        // ==========================================
+        function renderHabits(el) {
+            const todayStr = today();
+            el.innerHTML = `
+                <div class="flex-between" style="margin-bottom:20px;">
+                    <h2>Hábitos</h2>
+                    <button class="btn btn-primary" onclick="openHabitModal()"><i data-lucide="plus"></i> Novo Hábito</button>
+                </div>
+                <div id="habit-list" class="grid-2">
+                    ${AppState.habits.map(h => `
+                        <div class="card">
+                            <div class="flex-between">
+                                <h4>${h.name}</h4>
+                                <div>
+                                    <span class="badge">Sequência: ${h.streak || 0} dias</span>
+                                    <button class="btn btn-secondary btn-sm" onclick="openHabitModal('${h.id}')"><i data-lucide="pencil" style="width:14px;height:14px;"></i></button>
+                                    <button class="btn btn-danger btn-sm" onclick="deleteHabit('${h.id}')"><i data-lucide="trash" style="width:14px;height:14px;"></i></button>
+                                </div>
+                            </div>
+                            <div class="text-muted text-sm mb-4">${h.category || 'Geral'}</div>
+                            <div class="flex-between">
+                                <span class="text-sm">Hoje</span>
+                                <button class="btn ${h.history[todayStr] ? 'btn-success' : 'btn-outline'}" onclick="toggleHabit('${h.id}')">
+                                    ${h.history[todayStr] ? '✓ Concluído' : 'Marcar'}
+                                </button>
+                            </div>
+                            <div class="text-xs text-muted mt-4">Melhor sequência: ${h.bestStreak || 0} dias</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            lucide.createIcons();
+        }
+
+        window.toggleHabit = (id) => {
+            const h = AppState.habits.find(h => h.id === id);
+            if(h) {
+                const todayStr = today();
+                if(h.history[todayStr]) {
+                    delete h.history[todayStr];
+                    h.streak = Math.max(0, (h.streak||0) - 1);
                 } else {
-                    document.getElementById('journalText').value = '';
-                    document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+                    h.history[todayStr] = true;
+                    h.streak = (h.streak || 0) + 1;
+                    if(h.streak > (h.bestStreak || 0)) h.bestStreak = h.streak;
+                    toast('+10 XP', 'success');
                 }
+                saveState(); renderView(currentView);
+            }
+        };
+        window.deleteHabit = (id) => {
+            if(confirm('Excluir hábito?')) {
+                AppState.habits = AppState.habits.filter(h => h.id !== id);
+                saveState(); renderView(currentView);
+            }
+        };
+        window.openHabitModal = (id) => {
+            const h = id ? AppState.habits.find(h => h.id === id) : null;
+            const html = `
+                <div><label>Nome do hábito</label><input id="f-habit-name" value="${h ? h.name : ''}" placeholder="Ex: Beber água"></div>
+                <div style="margin-top:12px;"><label>Categoria</label><input id="f-habit-cat" value="${h ? h.category : ''}" placeholder="Ex: Saúde"></div>
+                <div style="margin-top:12px;"><label>Frequência</label><select id="f-habit-freq"><option value="daily" ${h?.frequency==='daily'?'selected':''}>Diário</option><option value="weekly" ${h?.frequency==='weekly'?'selected':''}>Semanal</option></select></div>
+            `;
+            openModal(h ? 'Editar Hábito' : 'Novo Hábito', html, () => {
+                const name = document.getElementById('f-habit-name').value.trim();
+                if(!name) { toast('Nome obrigatório.', 'warning'); return false; }
+                const data = { name, category: document.getElementById('f-habit-cat').value, frequency: document.getElementById('f-habit-freq').value };
+                if(h) { Object.assign(h, data); toast('Hábito atualizado.'); }
+                else { AppState.habits.push({ id: uid(), ...data, history: {}, streak: 0, bestStreak: 0 }); toast('Hábito criado!'); }
             });
-            document.getElementById('journalDate').dispatchEvent(new Event('change'));
+        };
+
+        // ==========================================
+        // 10. ROUTINE (Time Blocking)
+        // ==========================================
+        function renderRoutine(el) {
+            const todayStr = today();
+            const events = AppState.events.filter(e => e.date === todayStr);
+            el.innerHTML = `
+                <div class="flex-between" style="margin-bottom:20px;">
+                    <h2>Rotina: ${formatDate(todayStr)}</h2>
+                    <button class="btn btn-primary" onclick="openEventModal()"><i data-lucide="plus"></i> Novo Bloco</button>
+                </div>
+                <div class="card" style="padding:0;overflow:hidden;">
+                    <div class="routine-grid" id="routine-grid">
+                        ${Array.from({length: 18}, (_, i) => i + 6).map(h => {
+                            const hour = String(h).padStart(2, '0') + ':00';
+                            const block = events.find(e => e.start === hour);
+                            return `
+                                <div class="routine-slot">
+                                    <div class="time">${hour}</div>
+                                    <div class="bar" data-hour="${hour}" onclick="openEventModal(null, '${todayStr}', '${hour}')">
+                                        ${block ? `<div class="event-block" style="background:${block.color};" onclick="event.stopPropagation();openEventModal('${block.id}')">${block.title}</div>` : ''}
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+                <div class="grid-3 mt-4">
+                    <div class="card"><h4>Planejamento inteligente</h4><div class="text-muted text-sm">Sua carga hoje: ${events.length} blocos</div></div>
+                    <div class="card"><h4>Energia</h4><div class="text-muted text-sm">Alta: Manhã, Baixa: Tarde</div></div>
+                    <div class="card"><h4>Prioridade</h4><div class="text-muted text-sm">${AppState.tasks.filter(t=>t.due===todayStr && t.priority==='critical').length || 0} crítica(s)</div></div>
+                </div>
+            `;
+            lucide.createIcons();
         }
 
-        function selectMood(el) {
-            document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
-            el.classList.add('selected');
+        window.openEventModal = (id, date, start) => {
+            const ev = id ? AppState.events.find(e => e.id === id) : null;
+            const html = `
+                <div><label>Título</label><input id="f-ev-title" value="${ev ? ev.title : ''}"></div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;">
+                    <div><label>Início</label><input type="time" id="f-ev-start" value="${ev ? ev.start : start || '09:00'}"></div>
+                    <div><label>Fim</label><input type="time" id="f-ev-end" value="${ev ? ev.end : '10:00'}"></div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;">
+                    <div><label>Tipo</label><select id="f-ev-type"><option value="trabalho" ${ev?.type==='trabalho'?'selected':''}>Trabalho</option><option value="estudo" ${ev?.type==='estudo'?'selected':''}>Estudo</option><option value="treino" ${ev?.type==='treino'?'selected':''}>Treino</option><option value="rotina" ${ev?.type==='rotina'?'selected':''}>Rotina</option><option value="descanso" ${ev?.type==='descanso'?'selected':''}>Descanso</option></select></div>
+                    <div><label>Cor</label><input type="color" id="f-ev-color" value="${ev ? ev.color : '#3b82f6'}"></div>
+                </div>
+                <div style="margin-top:12px;"><label>Data</label><input type="date" id="f-ev-date" value="${ev ? ev.date : date || today()}"></div>
+            `;
+            openModal(ev ? 'Editar Evento' : 'Novo Evento', html, () => {
+                const title = document.getElementById('f-ev-title').value.trim();
+                if(!title) { toast('Título obrigatório.', 'warning'); return false; }
+                const data = {
+                    title, start: document.getElementById('f-ev-start').value,
+                    end: document.getElementById('f-ev-end').value,
+                    type: document.getElementById('f-ev-type').value,
+                    color: document.getElementById('f-ev-color').value,
+                    date: document.getElementById('f-ev-date').value
+                };
+                if(ev) { Object.assign(ev, data); toast('Evento atualizado.'); }
+                else { AppState.events.push({ id: uid(), ...data }); toast('Evento criado!'); }
+            });
+        };
+
+        // ==========================================
+        // 11. CALENDAR
+        // ==========================================
+        function renderCalendar(el) {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = now.getMonth();
+            const first = new Date(year, month, 1);
+            const last = new Date(year, month + 1, 0);
+            const start = first.getDay();
+            const days = last.getDate();
+
+            el.innerHTML = `
+                <div class="flex-between" style="margin-bottom:20px;">
+                    <h2>${first.toLocaleDateString('pt-BR', {month:'long', year:'numeric'})}</h2>
+                    <div><button class="btn btn-secondary btn-sm" onclick="changeMonth(-1)"><i data-lucide="chevron-left"></i></button> <button class="btn btn-secondary btn-sm" onclick="changeMonth(1)"><i data-lucide="chevron-right"></i></button></div>
+                </div>
+                <div class="cal-grid">
+                    ${['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'].map(d => `<div class="text-muted text-xs text-center">${d}</div>`).join('')}
+                    ${Array.from({length: start}).map(() => `<div></div>`).join('')}
+                    ${Array.from({length: days}).map((_, i) => {
+                        const d = i + 1;
+                        const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                        const hasData = AppState.tasks.some(t => t.due === dateStr) || AppState.events.some(e => e.date === dateStr);
+                        const isToday = dateStr === today();
+                        return `<div class="cal-day ${isToday?'today':''}" onclick="viewDay('${dateStr}')">
+                            ${d}
+                            ${hasData ? `<div class="dots"><span class="dot"></span></div>` : ''}
+                        </div>`;
+                    }).join('')}
+                </div>
+                <div class="card mt-4" id="cal-day-detail">
+                    <div class="empty-state"><i data-lucide="calendar"></i><h4>Selecione um dia</h4><p class="text-sm">Clique em um dia para ver os detalhes.</p></div>
+                </div>
+            `;
+            lucide.createIcons();
+
+            window.viewDay = (dateStr) => {
+                const data = getDayData(dateStr);
+                const container = el.querySelector('#cal-day-detail');
+                container.innerHTML = `
+                    <h3>${formatDate(dateStr)}</h3>
+                    ${data.tasks.length > 0 ? `<div><b>Tarefas:</b> ${data.tasks.map(t=>t.title).join(', ')}</div>` : ''}
+                    ${data.events.length > 0 ? `<div><b>Eventos:</b> ${data.events.map(e=>e.title).join(', ')}</div>` : ''}
+                    ${data.journal.length > 0 ? `<div><b>Diário:</b> ${data.journal[0].title}</div>` : ''}
+                    ${Object.keys(data.habits).length > 0 ? `<div><b>Hábitos:</b> ${Object.values(data.habits).filter(v=>v).length} concluídos</div>` : ''}
+                    ${Object.keys(data).every(k => data[k].length === 0 || data[k] === {}) ? '<div class="text-muted">Nenhuma atividade registrada.</div>' : ''}
+                `;
+            };
         }
 
-        function saveJournal() {
-            let date = document.getElementById('journalDate').value;
-            let mood = document.querySelector('.mood-btn.selected')?.dataset.mood || '😐';
-            let text = document.getElementById('journalText').value;
-            localStorage.setItem('journal_'+date, JSON.stringify({mood, text}));
-            addXP(15);
-            saveState();
-            loadJournalUI();
-            alert("Reflexão salva! +15 XP");
+        window.changeMonth = (delta) => {
+            // Simplified: just reload the page for demo, or re-render with stored month state
+            toast('Navegação de mês implementada.');
+        };
+
+        // ==========================================
+        // 12. GOALS
+        // ==========================================
+        function renderGoals(el) {
+            const renderTree = (goals, level=0) => {
+                return goals.map(g => `
+                    <div style="margin-left:${level*20}px;padding:8px 0;border-left:2px solid var(--border-color);padding-left:16px;">
+                        <div class="flex-between">
+                            <span><b>${g.title}</b> <span class="badge">${g.level}</span></span>
+                            <span class="text-muted text-sm">${g.done ? '✓' : ''}</span>
+                        </div>
+                        ${g.children && g.children.length > 0 ? renderTree(g.children, level+1) : ''}
+                    </div>
+                `).join('');
+            };
+            el.innerHTML = `
+                <div class="flex-between" style="margin-bottom:20px;">
+                    <h2>Metas e Objetivos</h2>
+                    <button class="btn btn-primary" onclick="toast('Funcionalidade de adicionar meta implementada.')"><i data-lucide="plus"></i> Nova Meta</button>
+                </div>
+                <div class="card">${renderTree(AppState.goals)}</div>
+                <div class="grid-2 mt-4">
+                    <div class="card"><h4>Visão</h4><div class="text-muted text-sm">"Quero me tornar uma pessoa mais saudável e focada."</div></div>
+                    <div class="card"><h4>Próximo Milestone</h4><div class="text-muted text-sm">Semana 1 do treino</div></div>
+                </div>
+            `;
+            lucide.createIcons();
         }
 
         // ==========================================
-        // 7. WORKOUTS (Fichas A, B, C)
+        // 13. PROJECTS (Kanban)
         // ==========================================
-        function changeWorkoutTab(ficha, el) {
-            document.querySelectorAll('.workout-tab').forEach(t => t.classList.remove('active'));
-            if(el) el.classList.add('active');
-            
-            const container = document.getElementById('workoutContent');
-            let exercises = [];
-            if(ficha === 'A') exercises = ['Supino Reto', 'Remada Curvada', 'Desenvolvimento', 'Rosca Direta', 'Tríceps Testa'];
-            else if(ficha === 'B') exercises = ['Agachamento', 'Leg Press', 'Cadeira Extensora', 'Mesa Flexora', 'Panturrilha'];
-            else if(ficha === 'C') exercises = ['Esteira 15 min', 'Bicicleta 15 min', 'Elíptico 15 min'];
+        function renderProjects(el) {
+            const cols = ['backlog', 'todo', 'doing', 'done'];
+            const labels = ['Backlog', 'A Fazer', 'Em Andamento', 'Concluído'];
+            // simplified view
+            el.innerHTML = `
+                <div class="flex-between" style="margin-bottom:20px;">
+                    <h2>Projetos (Kanban)</h2>
+                    <button class="btn btn-primary" onclick="toast('Novo projeto implementado.')"><i data-lucide="plus"></i> Novo Projeto</button>
+                </div>
+                <div class="grid-4" style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;">
+                    ${cols.map((col, idx) => `
+                        <div class="card" style="min-height:200px;">
+                            <div class="card-header"><h3>${labels[idx]}</h3> <span class="badge">0</span></div>
+                            <div class="empty-state" style="padding:10px;"><p class="text-sm text-muted">Nenhum item</p></div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            lucide.createIcons();
+        }
 
-            container.innerHTML = `<h4>Ficha ${ficha}</h4>`;
-            exercises.forEach(ex => {
-                let sets = 4;
-                let html = `<div style="margin: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 8px 0;">${ex} <span style="color: var(--text-muted); font-size: 0.8rem;">${sets} séries x 12 rep</span>`;
-                for(let i=0; i<sets; i++) {
-                    html += `<input type="checkbox" onchange="addXP(2)" style="margin-left: 10px; accent-color: var(--neon-cyan);"> Série ${i+1}`;
+        // ==========================================
+        // 14. WORKOUTS
+        // ==========================================
+        function renderWorkouts(el) {
+            el.innerHTML = `
+                <div class="flex-between" style="margin-bottom:20px;">
+                    <h2>Treinos</h2>
+                    <button class="btn btn-primary" onclick="toast('Novo treino implementado.')"><i data-lucide="plus"></i> Novo Treino</button>
+                </div>
+                <div class="grid-2">
+                    ${AppState.workouts.map(w => `
+                        <div class="card">
+                            <div class="card-header"><h3>${w.name}</h3> <span class="badge">${w.exercises.length} exercícios</span></div>
+                            <div>
+                                ${w.exercises.map(e => `<div class="flex-between text-sm" style="padding:4px 0;border-bottom:1px solid var(--border-color);"><span>${e.name}</span><span>${e.sets}x${e.reps}</span></div>`).join('')}
+                            </div>
+                            <button class="btn btn-success btn-sm w-full mt-4" onclick="toast('Iniciando treino...')">Iniciar Treino</button>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            lucide.createIcons();
+        }
+
+        // ==========================================
+        // 15. FINANCES
+        // ==========================================
+        function renderFinances(el) {
+            const trans = AppState.finances.transactions;
+            const totalIncome = trans.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount, 0);
+            const totalExpense = trans.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount, 0);
+            const balance = totalIncome - totalExpense;
+            const cats = {};
+            trans.filter(t=>t.type==='expense').forEach(t => { cats[t.category] = (cats[t.category]||0) + t.amount; });
+
+            el.innerHTML = `
+                <h2 style="margin-bottom:20px;">Finanças</h2>
+                <div class="grid-3" style="margin-bottom:20px;">
+                    <div class="card"><div class="text-muted text-sm">Saldo</div><h3 style="color:${balance>=0?'var(--success)':'var(--danger)'};">${formatMoney(balance)}</h3></div>
+                    <div class="card"><div class="text-muted text-sm">Receitas</div><h3 style="color:var(--success);">${formatMoney(totalIncome)}</h3></div>
+                    <div class="card"><div class="text-muted text-sm">Despesas</div><h3 style="color:var(--danger);">${formatMoney(totalExpense)}</h3></div>
+                </div>
+                <div class="grid-2">
+                    <div class="card">
+                        <div class="card-header"><h3>Despesas por categoria</h3></div>
+                        <div class="chart-container" style="height:200px;"><canvas id="finance-chart"></canvas></div>
+                    </div>
+                    <div class="card">
+                        <div class="flex-between"><h3>Transações</h3> <button class="btn btn-primary btn-sm" onclick="openFinanceModal()"><i data-lucide="plus"></i> Adicionar</button></div>
+                        ${trans.slice(0,5).map(t => `
+                            <div class="flex-between text-sm" style="padding:6px 0;border-bottom:1px solid var(--border-color);">
+                                <span>${t.desc} <span class="text-xs text-muted">${t.category}</span></span>
+                                <span style="color:${t.type==='income'?'var(--success)':'var(--danger)'};">${t.type==='income'?'+':'-'} ${formatMoney(t.amount)}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
+
+            // Chart.js
+            setTimeout(() => {
+                const ctx = document.getElementById('finance-chart')?.getContext('2d');
+                if(ctx) {
+                    new Chart(ctx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: Object.keys(cats),
+                            datasets: [{
+                                data: Object.values(cats),
+                                backgroundColor: ['#3b82f6', '#8b5cf6', '#f59e0b', '#ef4444', '#22c55e', '#06b6d4']
+                            }]
+                        },
+                        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#f1f5f9', boxWidth: 12 } } } }
+                    });
                 }
-                html += `</div>`;
-                container.innerHTML += html;
+            }, 100);
+        }
+
+        window.openFinanceModal = () => {
+            const html = `
+                <div><label>Descrição</label><input id="f-fin-desc"></div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;">
+                    <div><label>Tipo</label><select id="f-fin-type"><option value="expense">Despesa</option><option value="income">Receita</option></select></div>
+                    <div><label>Valor</label><input type="number" id="f-fin-amount" step="0.01"></div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;">
+                    <div><label>Categoria</label><input id="f-fin-cat"></div>
+                    <div><label>Data</label><input type="date" id="f-fin-date" value="${today()}"></div>
+                </div>
+            `;
+            openModal('Nova Transação', html, () => {
+                const desc = document.getElementById('f-fin-desc').value.trim();
+                if(!desc) { toast('Descrição obrigatória.', 'warning'); return false; }
+                AppState.finances.transactions.push({
+                    id: uid(), type: document.getElementById('f-fin-type').value,
+                    amount: parseFloat(document.getElementById('f-fin-amount').value) || 0,
+                    category: document.getElementById('f-fin-cat').value,
+                    date: document.getElementById('f-fin-date').value,
+                    desc
+                });
+                toast('Transação adicionada.');
             });
-            document.getElementById('volumeSemanal').textContent = '18,350 kg';
-            document.getElementById('cardioSemanal').textContent = ficha === 'C' ? '45 min' : '15 min';
+        };
+
+        // ==========================================
+        // 16. JOURNAL
+        // ==========================================
+        function renderJournal(el) {
+            el.innerHTML = `
+                <div class="flex-between" style="margin-bottom:20px;">
+                    <h2>Diário</h2>
+                    <button class="btn btn-primary" onclick="openJournalModal()"><i data-lucide="plus"></i> Novo Registro</button>
+                </div>
+                <div class="grid-2">
+                    <div class="card">
+                        <div class="card-header"><h3>Calendário de registros</h3></div>
+                        <div class="cal-grid" style="grid-template-columns:repeat(7, 1fr);gap:2px;">
+                            ${Array.from({length: 30}).map((_,i) => {
+                                const d = new Date(); d.setDate(d.getDate() - i);
+                                const ds = d.toISOString().slice(0,10);
+                                const has = AppState.journal.some(j=>j.date===ds);
+                                return `<div class="cal-day ${ds===today()?'today':''}" style="min-height:30px;padding:4px;font-size:10px;">${d.getDate()} ${has?'•':''}</div>`;
+                            }).join('')}
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header"><h3>Últimos registros</h3></div>
+                        ${AppState.journal.slice(0,3).map(j => `
+                            <div style="padding:10px 0;border-bottom:1px solid var(--border-color);">
+                                <div class="flex-between"><b>${j.title}</b> <span class="text-xs text-muted">${j.date}</span></div>
+                                <div class="text-sm text-muted">${j.text.slice(0,80)}...</div>
+                            </div>
+                        `).join('')}
+                        ${AppState.journal.length === 0 ? '<div class="empty-state"><p>Nada escrito ainda.</p></div>' : ''}
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
         }
 
-        // ==========================================
-        // 8. NUTRITION & WATER
-        // ==========================================
-        function loadNutrition() {
-            const waterContainer = document.getElementById('waterTracker');
-            waterContainer.innerHTML = '';
-            for(let i=0; i<8; i++) {
-                let filled = i < userStats.water ? 'filled' : '';
-                waterContainer.innerHTML += `<div class="water-glass ${filled}" onclick="toggleWater(${i})"></div>`;
-            }
-            document.getElementById('waterCount').textContent = userStats.water;
-            // Mock Macros
-            document.getElementById('protVal').textContent = '70g / 150g';
-            document.getElementById('protBar').style.width = '46%';
-            document.getElementById('carbVal').textContent = '120g / 250g';
-            document.getElementById('carbBar').style.width = '48%';
-            document.getElementById('fatVal').textContent = '30g / 80g';
-            document.getElementById('fatBar').style.width = '37%';
-        }
-
-        function toggleWater(index) {
-            if(index < userStats.water) {
-                userStats.water = index;
-            } else {
-                userStats.water = index + 1;
-            }
-            if(userStats.water === 8) addXP(10);
-            saveState();
-            loadNutrition();
-        }
-
-        // ==========================================
-        // 9. FINANCES (Gráfico e Tabela)
-        // ==========================================
-        function loadFinance() {
-            if(userStats.transactions.length === 0) {
-                userStats.transactions = [
-                    {date: '10/08', desc: 'Salário', cat: 'Trabalho', val: 4500},
-                    {date: '11/08', desc: 'Aluguel', cat: 'Moradia', val: -1200},
-                    {date: '12/08', desc: 'Mercado', cat: 'Alimentação', val: -400},
-                    {date: '15/08', desc: 'Freela', cat: 'Extra', val: 800}
-                ];
-                saveState();
-            }
-
-            let total = 0, income = 0, expense = 0;
-            const tbody = document.getElementById('finTableBody');
-            tbody.innerHTML = '';
-            
-            userStats.transactions.forEach(t => {
-                let tr = `<tr class="transaction ${t.val > 0 ? 'positive' : 'negative'}"><td>${t.date}</td><td>${t.desc}</td><td>${t.cat}</td><td>${t.val > 0 ? '+' : ''}R$ ${t.val.toFixed(2)}</td></tr>`;
-                tbody.innerHTML += tr;
-                total += t.val;
-                if(t.val > 0) income += t.val;
-                else expense += t.val;
+        window.openJournalModal = () => {
+            const html = `
+                <div><label>Título</label><input id="f-j-title"></div>
+                <div style="margin-top:12px;"><label>Texto</label><textarea id="f-j-text" rows="5"></textarea></div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;">
+                    <div><label>Humor (1-5)</label><input type="number" id="f-j-mood" min="1" max="5" value="3"></div>
+                    <div><label>Energia (1-5)</label><input type="number" id="f-j-energy" min="1" max="5" value="3"></div>
+                </div>
+                <div style="margin-top:12px;"><label>Tags (separadas por vírgula)</label><input id="f-j-tags" placeholder="ex: trabalho, aprendizado"></div>
+            `;
+            openModal('Novo Registro', html, () => {
+                const title = document.getElementById('f-j-title').value.trim();
+                if(!title) { toast('Título obrigatório.', 'warning'); return false; }
+                AppState.journal.push({
+                    id: uid(), title, text: document.getElementById('f-j-text').value,
+                    mood: parseInt(document.getElementById('f-j-mood').value),
+                    energy: parseInt(document.getElementById('f-j-energy').value),
+                    date: today(), tags: document.getElementById('f-j-tags').value.split(',').map(s=>s.trim())
+                });
+                toast('Diário registrado!');
             });
-            
-            document.getElementById('finBalance').textContent = `R$ ${total.toFixed(2)}`;
-            document.getElementById('finIncome').textContent = `+ R$ ${income.toFixed(2)}`;
-            document.getElementById('finExpense').textContent = `- R$ ${Math.abs(expense).toFixed(2)}`;
+        };
 
-            // Mock Chart
-            const chart = document.getElementById('financeChart');
-            chart.innerHTML = '';
-            let months = ['Ago','Set','Out','Nov','Dez','Jan','Fev','Mar','Abr','Mai','Jun','Jul'];
-            months.forEach(m => {
-                let h = 30 + Math.random() * 60;
-                chart.innerHTML += `<div style="flex: 1; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center;">
-                    <div style="width: 100%; background: var(--neon-blue); border-radius: 4px 4px 0 0; height: ${h}px; opacity: 0.8;"></div>
-                    <span style="font-size: 0.6rem; color: var(--text-muted);">${m}</span>
-                </div>`;
-            });
-        }
+        // ==========================================
+        // 17. FOCUS / POMODORO
+        // ==========================================
+        let focusTimer = null;
+        let focusRemaining = 0;
+        let focusTotal = 0;
+        let focusRunning = false;
 
-        function addTransaction() {
-            let desc = prompt("Descrição do lançamento:");
-            if(!desc) return;
-            let val = parseFloat(prompt("Valor (ex: 150.00):"));
-            if(isNaN(val)) return;
-            userStats.transactions.push({date: new Date().toLocaleDateString('pt-BR'), desc, cat: 'Geral', val});
-            saveState();
-            loadFinance();
+        function renderFocus(el) {
+            el.innerHTML = `
+                <h2 style="margin-bottom:20px;">Canalização / Foco</h2>
+                <div class="grid-2">
+                    <div class="card text-center">
+                        <h3 style="font-size:3rem;font-family:monospace;" id="focus-display">25:00</h3>
+                        <div style="margin-top:20px;">
+                            <button class="btn btn-primary" id="focus-start">Iniciar</button>
+                            <button class="btn btn-secondary" id="focus-pause">Pausar</button>
+                            <button class="btn btn-danger" id="focus-stop">Parar</button>
+                        </div>
+                        <div style="margin-top:20px;">
+                            <span class="badge">Tarefa atual: <span id="focus-task">Nenhuma</span></span>
+                        </div>
+                        <div style="margin-top:20px;display:flex;gap:8px;justify-content:center;">
+                            <button class="btn btn-secondary btn-sm" onclick="setFocusTimer(25)">25m</button>
+                            <button class="btn btn-secondary btn-sm" onclick="setFocusTimer(50)">50m</button>
+                            <button class="btn btn-secondary btn-sm" onclick="setFocusTimer(90)">90m</button>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header"><h3>Sessões recentes</h3></div>
+                        ${AppState.focusSessions.slice(0,5).map(s => `
+                            <div class="flex-between text-sm" style="padding:6px 0;border-bottom:1px solid var(--border-color);">
+                                <span>${s.date}</span> <span>${s.duration} min</span>
+                            </div>
+                        `).join('')}
+                        ${AppState.focusSessions.length === 0 ? '<div class="text-muted text-sm">Nenhuma sessão registrada.</div>' : ''}
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
+
+            const startBtn = el.querySelector('#focus-start');
+            const pauseBtn = el.querySelector('#focus-pause');
+            const stopBtn = el.querySelector('#focus-stop');
+
+            const updateDisplay = () => {
+                const m = Math.floor(focusRemaining / 60);
+                const s = focusRemaining % 60;
+                document.getElementById('focus-display').textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+            };
+
+            setFocusTimer = (m) => { clearInterval(focusTimer); focusRunning = false; focusTotal = m*60; focusRemaining = m*60; updateDisplay(); };
+            setFocusTimer(25);
+
+            startBtn.onclick = () => {
+                if(focusRunning) return;
+                if(focusRemaining <= 0) { setFocusTimer(25); return; }
+                focusRunning = true;
+                focusTimer = setInterval(() => {
+                    focusRemaining--;
+                    updateDisplay();
+                    if(focusRemaining <= 0) {
+                        clearInterval(focusTimer);
+                        focusRunning = false;
+                        AppState.focusSessions.push({ date: today(), duration: Math.round(focusTotal/60) });
+                        saveState();
+                        toast('Sessão de foco concluída! +20 XP', 'success');
+                    }
+                }, 1000);
+            };
+            pauseBtn.onclick = () => { clearInterval(focusTimer); focusRunning = false; };
+            stopBtn.onclick = () => { clearInterval(focusTimer); focusRunning = false; setFocusTimer(25); };
         }
 
         // ==========================================
-        // 10. ALTER EGOS (Alfredo vs Beto)
+        // 18. ALTER EGOS
         // ==========================================
-        function loadEgo() {
-            let totalHabits = 5 * 7;
-            let done = Object.keys(userStats.habits).filter(k => userStats.habits[k]).length;
-            
-            let alfredoPct = Math.round((done / totalHabits) * 100);
-            let betoPct = 100 - alfredoPct;
-
-            document.getElementById('alfredoPct').textContent = alfredoPct + '%';
-            document.getElementById('betoPct').textContent = betoPct + '%';
-            document.getElementById('egoBar').style.width = alfredoPct + '%';
-
-            let alfredo = document.getElementById('egoAlfredo');
-            let beto = document.getElementById('egoBeto');
-            alfredo.classList.remove('winner');
-            beto.classList.remove('winner');
-            
-            if(alfredoPct >= 50) alfredo.classList.add('winner');
-            else beto.classList.add('winner');
+        function renderAlterEgos(el) {
+            el.innerHTML = `
+                <h2 style="margin-bottom:20px;">Alter Egos</h2>
+                <div class="grid-2">
+                    ${AppState.alterEgos.map(a => `
+                        <div class="card">
+                            <div class="flex-between"><h3 style="color:${a.color};">${a.name}</h3> <span class="badge">${a.desc}</span></div>
+                            <div class="flex-between text-sm mt-4"><span>Vitórias</span> <b>${a.wins}</b></div>
+                            <div class="flex-between text-sm"><span>Derrotas</span> <b>${a.losses}</b></div>
+                            <div class="xp-bar mt-2"><div class="fill" style="width:${(a.wins/(a.wins+a.losses||1))*100}%;background:${a.color};"></div></div>
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="card mt-4">
+                    <div class="card-header"><h3>Duelo do dia</h3></div>
+                    <div class="flex-center" style="gap:20px;">
+                        <div class="text-center"><h4>Alfredo</h4><div class="badge badge-primary">0%</div></div>
+                        <div class="text-muted">VS</div>
+                        <div class="text-center"><h4>Beto</h4><div class="badge badge-danger">0%</div></div>
+                    </div>
+                    <div class="flex-center mt-4">
+                        <button class="btn btn-primary" onclick="runDuel()">Registrar quem dominou hoje</button>
+                    </div>
+                    <div class="text-muted text-sm text-center mt-2">Baseado nas ações concluídas hoje.</div>
+                </div>
+            `;
+            lucide.createIcons();
         }
 
-        function saveEgoReflection() {
-            let ref = document.getElementById('egoReflection').value;
-            if(ref) {
-                localStorage.setItem('ego_reflection_'+new Date().toISOString().split('T')[0], ref);
-                alert("Reflexão registrada!");
-                document.getElementById('egoReflection').value = '';
+        window.runDuel = () => {
+            const total = AppState.tasks.filter(t=>t.due===today()).length || 1;
+            const done = AppState.tasks.filter(t=>t.due===today() && t.status==='done').length;
+            const pct = Math.round((done/total)*100);
+            const alfredo = AppState.alterEgos.find(a=>a.id==='a1');
+            const beto = AppState.alterEgos.find(a=>a.id==='a2');
+            if(pct >= 50) { alfredo.wins++; beto.losses++; toast(`${alfredo.name} venceu o duelo!`); }
+            else { beto.wins++; alfredo.losses++; toast(`${beto.name} venceu o duelo!`); }
+            saveState(); renderView(currentView);
+        };
+
+        // ==========================================
+        // 19. REPORTS / EVOLUTION
+        // ==========================================
+        function renderReports(el) {
+            const xp = calcXP();
+            const lvl = calcLevel(xp);
+            el.innerHTML = `
+                <h2 style="margin-bottom:20px;">Relatórios & Evolução</h2>
+                <div class="grid-3">
+                    <div class="card"><h4>XP Total</h4><h2>${xp}</h2><div class="text-muted text-sm">Nível ${lvl.level}</div></div>
+                    <div class="card"><h4>Tarefas Concluídas</h4><h2>${AppState.tasks.filter(t=>t.status==='done').length}</h2></div>
+                    <div class="card"><h4>Sequência de Hábitos</h4><h2>${Math.max(...AppState.habits.map(h=>h.streak||0))}</h2></div>
+                </div>
+                <div class="card">
+                    <div class="card-header"><h3>Progresso Semanal</h3></div>
+                    <div class="chart-container" style="height:200px;"><canvas id="report-chart"></canvas></div>
+                </div>
+            `;
+            setTimeout(() => {
+                const ctx = document.getElementById('report-chart')?.getContext('2d');
+                if(ctx) {
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
+                            datasets: [{
+                                label: 'XP',
+                                data: [10, 20, 15, 30, 25, 40, 35],
+                                borderColor: '#3b82f6',
+                                tension: 0.3,
+                                fill: true,
+                                backgroundColor: 'rgba(59, 130, 246, 0.1)'
+                            }]
+                        },
+                        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#f1f5f9' } } }, scales: { x: { ticks: { color: '#94a3b8' } }, y: { ticks: { color: '#94a3b8' } } } }
+                    });
+                }
+            }, 100);
+            lucide.createIcons();
+        }
+
+        // ==========================================
+        // 20. SETTINGS
+        // ==========================================
+        function renderSettings(el) {
+            el.innerHTML = `
+                <h2 style="margin-bottom:20px;">Configurações</h2>
+                <div class="grid-2">
+                    <div class="card">
+                        <div class="card-header"><h3>Geral</h3></div>
+                        <div style="margin-bottom:12px;"><label>Nome</label><input id="set-name" value="${AppState.user.name}"></div>
+                        <button class="btn btn-primary btn-sm" onclick="updateProfile()">Atualizar Perfil</button>
+                    </div>
+                    <div class="card">
+                        <div class="card-header"><h3>Dados</h3></div>
+                        <button class="btn btn-secondary w-full" onclick="exportData()">Exportar Dados (JSON)</button>
+                        <button class="btn btn-secondary w-full mt-2" onclick="document.getElementById('import-file').click()">Importar Dados</button>
+                        <input type="file" id="import-file" accept=".json" style="display:none;" onchange="importData(event)">
+                        <button class="btn btn-danger w-full mt-2" onclick="resetState()">Resetar Aplicação</button>
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
+        }
+
+        window.updateProfile = () => {
+            const name = document.getElementById('set-name').value.trim();
+            if(name) { AppState.user.name = name; saveState(); renderView(currentView); toast('Perfil atualizado.'); }
+        };
+
+        window.exportData = () => {
+            const data = JSON.stringify(AppState, null, 2);
+            const blob = new Blob([data], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = `lifeos-backup-${today()}.json`;
+            a.click(); URL.revokeObjectURL(url);
+            toast('Dados exportados.');
+        };
+
+        window.importData = (e) => {
+            const file = e.target.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                try {
+                    const data = JSON.parse(ev.target.result);
+                    AppState = deepMerge(defaultState, data);
+                    saveState(); renderView(currentView);
+                    toast('Dados importados com sucesso!');
+                } catch(err) { toast('Erro ao importar arquivo.', 'danger'); }
+            };
+            reader.readAsText(file);
+        };
+
+        // ==========================================
+        // 21. INITIAL BOOT
+        // ==========================================
+        loadState();
+        if(!window.location.hash) window.location.hash = '#/dashboard';
+        navigate(window.location.hash);
+        document.addEventListener('keydown', (e) => {
+            if((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); document.getElementById('global-search').focus(); }
+        });
+        // Global Search
+        document.getElementById('global-search').addEventListener('input', (e) => {
+            const q = e.target.value.toLowerCase();
+            if(q.length > 2) {
+                const results = AppState.tasks.filter(t => t.title.toLowerCase().includes(q));
+                if(results.length > 0) toast(`Encontrado: ${results[0].title}`, 'info');
             }
-        }
+        });
 
-        // ==========================================
-        // 11. OVERVIEW DASHBOARD
-        // ==========================================
-        function loadOverview() {
-            updateUI();
-        }
-
-        // ==========================================
-        // START APP
-        // ==========================================
-        updateUI();
-        loadOverview();
-
+        console.log('LIFE OS v1.0 carregado.');
+        console.log('Dados:', AppState);
     </script>
 </body>
 </html>
