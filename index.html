@@ -1,0 +1,1644 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <title>LIFE OS — Sistema Operacional Pessoal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
+    <style>
+        :root {
+            --bg: #05070f;
+            --bg2: #0a0f1e;
+            --surface: rgba(15, 23, 42, 0.65);
+            --surface-2: rgba(20, 30, 55, 0.8);
+            --surface-3: rgba(25, 38, 70, 0.9);
+            --primary: #3b82f6;
+            --primary-glow: #60a5fa;
+            --secondary: #8b5cf6;
+            --accent: #06b6d4;
+            --cyan: #22d3ee;
+            --text: #e2e8f0;
+            --muted: #94a3b8;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --radius-sm: 10px;
+            --radius: 18px;
+            --radius-lg: 28px;
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+            --glow: 0 0 20px rgba(59, 130, 246, 0.35);
+            --glow-strong: 0 0 40px rgba(59, 130, 246, 0.55);
+            --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            --font: 'Inter', system-ui, -apple-system, sans-serif;
+            --sidebar-width: 72px;
+            --sidebar-expanded: 220px;
+            --topbar-height: 60px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { font-size: 16px; scroll-behavior: smooth; }
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+            min-height: 100vh;
+            background-image: radial-gradient(ellipse at 20% 30%, rgba(59,130,246,0.12) 0%, transparent 60%),
+                              radial-gradient(ellipse at 80% 70%, rgba(139,92,246,0.1) 0%, transparent 60%),
+                              radial-gradient(ellipse at 50% 50%, rgba(6,182,212,0.06) 0%, transparent 70%);
+            background-attachment: fixed;
+            overflow-x: hidden;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: linear-gradient(160deg, rgba(5,7,15,0.85) 0%, rgba(10,15,30,0.75) 50%, rgba(5,7,15,0.9) 100%);
+            z-index: -1;
+        }
+        button { font-family: inherit; cursor: pointer; }
+        input, select, textarea { font-family: inherit; }
+        a { color: var(--accent); text-decoration: none; }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--surface-3); border-radius: 8px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+
+        .glass-card {
+            background: var(--surface);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(148, 163, 184, 0.15);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 1.25rem;
+            transition: var(--transition);
+        }
+        .glass-card:hover { border-color: rgba(59,130,246,0.4); box-shadow: var(--glow); }
+        .btn {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            padding: 0.6rem 1.2rem; border-radius: 12px; border: none;
+            font-weight: 600; font-size: 0.9rem; transition: var(--transition);
+            background: var(--surface-3); color: var(--text); border: 1px solid rgba(148,163,184,0.2);
+        }
+        .btn:hover { border-color: var(--primary); box-shadow: var(--glow); transform: translateY(-1px); }
+        .btn:active { transform: translateY(0); }
+        .btn-primary { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; border: none; box-shadow: 0 4px 15px rgba(59,130,246,0.4); }
+        .btn-primary:hover { box-shadow: var(--glow-strong); }
+        .btn-success { background: linear-gradient(135deg, #059669, #10b981); color: white; border: none; }
+        .btn-danger { background: rgba(239,68,68,0.15); color: #fca5a5; border: 1px solid rgba(239,68,68,0.3); }
+        .btn-danger:hover { background: rgba(239,68,68,0.25); border-color: var(--danger); box-shadow: 0 0 15px rgba(239,68,68,0.3); }
+        .btn-ghost { background: transparent; border: 1px solid rgba(148,163,184,0.2); }
+        .btn-sm { padding: 0.4rem 0.8rem; font-size: 0.8rem; border-radius: 8px; }
+        .btn-icon { width: 36px; height: 36px; padding: 0; justify-content: center; border-radius: 10px; }
+        .input, .select, .textarea {
+            width: 100%; padding: 0.65rem 1rem; background: rgba(5,7,15,0.6);
+            border: 1px solid rgba(148,163,184,0.25); border-radius: 12px; color: var(--text);
+            font-size: 0.9rem; transition: var(--transition); outline: none;
+        }
+        .input:focus, .select:focus, .textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(6,182,212,0.2); }
+        .textarea { min-height: 80px; resize: vertical; }
+        .label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--muted); margin-bottom: 0.4rem; }
+        .badge {
+            display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.2rem 0.6rem;
+            border-radius: 20px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.02em;
+            background: rgba(59,130,246,0.15); color: var(--primary-glow); border: 1px solid rgba(59,130,246,0.3);
+        }
+        .badge-success { background: rgba(16,185,129,0.15); color: #34d399; border-color: rgba(16,185,129,0.3); }
+        .badge-warning { background: rgba(245,158,11,0.15); color: #fbbf24; border-color: rgba(245,158,11,0.3); }
+        .badge-danger { background: rgba(239,68,68,0.15); color: #fca5a5; border-color: rgba(239,68,68,0.3); }
+        .badge-info { background: rgba(6,182,212,0.15); color: #67e8f9; border-color: rgba(6,182,212,0.3); }
+        .badge-purple { background: rgba(139,92,246,0.15); color: #c4b5fd; border-color: rgba(139,92,246,0.3); }
+
+        #app { display: flex; min-height: 100vh; }
+        #sidebar {
+            width: var(--sidebar-width); position: fixed; top: 0; left: 0; bottom: 0; z-index: 100;
+            background: rgba(8,12,25,0.8); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(148,163,184,0.1); display: flex; flex-direction: column;
+            transition: width var(--transition); overflow: hidden;
+        }
+        #sidebar.expanded { width: var(--sidebar-expanded); }
+        #sidebar .sidebar-header { padding: 1rem; display: flex; align-items: center; gap: 0.75rem; border-bottom: 1px solid rgba(148,163,184,0.1); }
+        #sidebar .logo { font-size: 1.4rem; font-weight: 900; background: linear-gradient(135deg, var(--cyan), var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; white-space: nowrap; }
+        #sidebar .sidebar-toggle { margin-left: auto; background: transparent; border: none; color: var(--muted); font-size: 1.2rem; }
+        #sidebar nav { flex: 1; padding: 1rem 0.5rem; display: flex; flex-direction: column; gap: 0.25rem; overflow-y: auto; }
+        #sidebar .nav-item {
+            display: flex; align-items: center; gap: 0.75rem; padding: 0.7rem 0.6rem; border-radius: 12px;
+            color: var(--muted); font-size: 0.85rem; font-weight: 500; transition: var(--transition); border: none; background: transparent; width: 100%;
+            white-space: nowrap; overflow: hidden;
+        }
+        #sidebar .nav-item:hover { background: rgba(59,130,246,0.1); color: var(--text); }
+        #sidebar .nav-item.active { background: rgba(59,130,246,0.2); color: white; box-shadow: 0 0 15px rgba(59,130,246,0.2); }
+        #sidebar .nav-item .nav-icon { width: 22px; height: 22px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; }
+        #sidebar .nav-item .nav-label { opacity: 0; transition: opacity 0.2s; }
+        #sidebar.expanded .nav-item .nav-label { opacity: 1; }
+        #sidebar .sidebar-footer { padding: 1rem 0.5rem; border-top: 1px solid rgba(148,163,184,0.1); }
+
+        #main {
+            flex: 1; margin-left: var(--sidebar-width); padding: 0; min-width: 0; transition: margin-left var(--transition);
+        }
+        #sidebar.expanded ~ #main { margin-left: var(--sidebar-expanded); }
+        #topbar {
+            position: sticky; top: 0; z-index: 50; height: var(--topbar-height);
+            background: rgba(8,12,25,0.7); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(148,163,184,0.1); display: flex; align-items: center; gap: 0.75rem; padding: 0 1.5rem;
+        }
+        #topbar .page-title { font-weight: 700; font-size: 1.1rem; letter-spacing: 0.01em; }
+        #topbar .search-btn { margin-left: auto; }
+        #page-content { padding: 1.5rem; max-width: 1400px; margin: 0 auto; }
+
+        .page-grid { display: grid; gap: 1.25rem; }
+        .grid-2 { grid-template-columns: 1fr 1fr; }
+        .grid-3 { grid-template-columns: repeat(3, 1fr); }
+        .grid-4 { grid-template-columns: repeat(4, 1fr); }
+        .card-title { font-size: 1rem; font-weight: 700; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem; }
+        .card-subtitle { font-size: 0.8rem; color: var(--muted); margin-top: -0.4rem; margin-bottom: 0.75rem; }
+        .progress-bar { width: 100%; height: 8px; background: rgba(148,163,184,0.15); border-radius: 8px; overflow: hidden; }
+        .progress-fill { height: 100%; border-radius: 8px; background: linear-gradient(90deg, var(--primary), var(--accent)); transition: width 0.5s ease; box-shadow: 0 0 10px rgba(59,130,246,0.5); }
+        .xp-float { position: fixed; z-index: 200; font-weight: 800; font-size: 1.2rem; color: var(--cyan); text-shadow: 0 0 15px rgba(34,211,238,0.8); animation: floatUp 1.2s ease forwards; pointer-events: none; }
+        @keyframes floatUp { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-60px) scale(1.3); } }
+        .streak-fire { color: #fb923c; font-size: 1.2rem; }
+
+        .list-item {
+            display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; border-radius: 12px;
+            background: rgba(5,7,15,0.4); border: 1px solid rgba(148,163,184,0.1); margin-bottom: 0.5rem; transition: var(--transition);
+        }
+        .list-item:hover { border-color: rgba(59,130,246,0.4); background: rgba(59,130,246,0.05); }
+        .list-item .item-icon { width: 36px; height: 36px; border-radius: 10px; background: var(--surface-3); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .list-item .item-content { flex: 1; min-width: 0; }
+        .list-item .item-title { font-weight: 600; font-size: 0.9rem; }
+        .list-item .item-sub { font-size: 0.75rem; color: var(--muted); }
+        .list-item .item-actions { display: flex; gap: 0.3rem; }
+
+        .checkbox-custom { width: 22px; height: 22px; border-radius: 6px; border: 2px solid var(--muted); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: var(--transition); background: transparent; }
+        .checkbox-custom.checked { background: var(--success); border-color: var(--success); }
+        .checkbox-custom svg { width: 14px; height: 14px; stroke: white; stroke-width: 3; fill: none; }
+
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 500;
+            display: flex; align-items: center; justify-content: center; padding: 1rem; animation: fadeIn 0.2s ease;
+        }
+        .modal {
+            background: var(--surface-2); border: 1px solid rgba(148,163,184,0.2); border-radius: var(--radius-lg);
+            box-shadow: var(--glow-strong); padding: 1.5rem; width: 100%; max-width: 560px; max-height: 90vh; overflow-y: auto;
+            animation: scaleIn 0.25s ease;
+        }
+        .modal h3 { margin-bottom: 1rem; font-size: 1.2rem; }
+        .modal .form-group { margin-bottom: 1rem; }
+        .modal-actions { display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 1.5rem; flex-wrap: wrap; }
+
+        .toast-root { position: fixed; top: 1rem; right: 1rem; z-index: 600; display: flex; flex-direction: column; gap: 0.5rem; pointer-events: none; }
+        .toast {
+            padding: 0.8rem 1.2rem; border-radius: 12px; background: var(--surface-3); border: 1px solid rgba(148,163,184,0.2);
+            color: var(--text); box-shadow: var(--shadow); animation: slideIn 0.3s ease; pointer-events: auto; font-size: 0.9rem; font-weight: 500;
+            border-left: 4px solid var(--info);
+        }
+        .toast.success { border-left-color: var(--success); }
+        .toast.error { border-left-color: var(--danger); }
+        .toast.warning { border-left-color: var(--warning); }
+        .toast.info { border-left-color: var(--info); }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes scaleIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        .command-palette {
+            position: fixed; top: 20%; left: 50%; transform: translateX(-50%); z-index: 700; width: 90%; max-width: 560px;
+            background: var(--surface-2); border: 1px solid rgba(148,163,184,0.25); border-radius: var(--radius-lg);
+            box-shadow: var(--glow-strong); overflow: hidden; display: none; animation: scaleIn 0.2s ease;
+        }
+        .command-palette.open { display: block; }
+        .command-palette input { width: 100%; padding: 1rem 1.2rem; background: transparent; border: none; border-bottom: 1px solid rgba(148,163,184,0.2); color: var(--text); font-size: 1rem; outline: none; }
+        .command-palette .cmds { max-height: 320px; overflow-y: auto; padding: 0.5rem; }
+        .command-palette .cmd-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0.8rem; border-radius: 10px; cursor: pointer; transition: var(--transition); }
+        .command-palette .cmd-item:hover, .command-palette .cmd-item.selected { background: rgba(59,130,246,0.15); }
+
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.25rem; }
+        .calendar-day { aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 10px; cursor: pointer; transition: var(--transition); font-size: 0.8rem; position: relative; }
+        .calendar-day:hover { background: rgba(59,130,246,0.1); }
+        .calendar-day.selected { background: var(--primary); color: white; box-shadow: var(--glow); }
+        .calendar-day.other-month { opacity: 0.35; }
+        .calendar-day .dots { display: flex; gap: 2px; margin-top: 2px; }
+        .calendar-day .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); }
+
+        .agenda-grid { display: grid; grid-template-columns: 60px repeat(7, 1fr); gap: 0.25rem; min-width: 800px; }
+        .agenda-time { font-size: 0.7rem; color: var(--muted); text-align: right; padding: 0.5rem 0.25rem; }
+        .agenda-cell { border: 1px solid rgba(148,163,184,0.08); border-radius: 6px; min-height: 40px; position: relative; background: rgba(5,7,15,0.3); cursor: pointer; transition: var(--transition); }
+        .agenda-cell:hover { background: rgba(59,130,246,0.08); }
+        .agenda-event { position: absolute; left: 0; right: 0; border-radius: 6px; padding: 0.2rem 0.3rem; font-size: 0.65rem; overflow: hidden; background: rgba(59,130,246,0.3); border-left: 3px solid var(--primary); cursor: pointer; z-index: 2; }
+        .agenda-event.conflict { background: rgba(239,68,68,0.3); border-left-color: var(--danger); }
+
+        .focus-timer { font-size: 3rem; font-weight: 900; text-align: center; letter-spacing: 0.05em; font-variant-numeric: tabular-nums; }
+        .focus-progress { width: 100%; height: 10px; background: rgba(148,163,184,0.15); border-radius: 10px; overflow: hidden; margin: 1rem 0; }
+        .focus-progress-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--accent)); transition: width 0.3s linear; }
+
+        .chart-container { position: relative; height: 250px; width: 100%; }
+        canvas { max-width: 100%; }
+
+        .empty-state { text-align: center; padding: 2rem 1rem; color: var(--muted); }
+        .empty-state svg { width: 48px; height: 48px; margin-bottom: 1rem; opacity: 0.6; }
+        .empty-state h4 { color: var(--text); margin-bottom: 0.5rem; }
+
+        .onboarding-overlay { position: fixed; inset: 0; z-index: 800; background: rgba(5,7,15,0.95); display: flex; align-items: center; justify-content: center; padding: 1rem; }
+        .onboarding-card { max-width: 520px; width: 100%; max-height: 90vh; overflow-y: auto; }
+
+        @media (max-width: 1024px) {
+            .grid-4 { grid-template-columns: repeat(2, 1fr); }
+            .grid-3 { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 768px) {
+            #sidebar { width: 100%; height: 68px; top: auto; bottom: 0; border-right: none; border-top: 1px solid rgba(148,163,184,0.1); flex-direction: row; align-items: center; padding: 0 0.5rem; }
+            #sidebar .sidebar-header, #sidebar .sidebar-footer { display: none; }
+            #sidebar nav { flex-direction: row; padding: 0; gap: 0; overflow-x: auto; width: 100%; }
+            #sidebar .nav-item { flex-direction: column; gap: 0.2rem; padding: 0.5rem 0.4rem; font-size: 0.6rem; width: auto; min-width: 56px; }
+            #sidebar .nav-item .nav-icon { width: 20px; height: 20px; }
+            #sidebar .nav-item .nav-label { opacity: 1; font-size: 0.55rem; }
+            #main { margin-left: 0 !important; padding-bottom: 68px; }
+            #topbar { padding: 0 1rem; }
+            #page-content { padding: 1rem; }
+            .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+            .agenda-grid { min-width: 900px; }
+            .calendar-day { font-size: 0.7rem; }
+        }
+        @media (max-width: 480px) {
+            #page-content { padding: 0.75rem; }
+            .glass-card { padding: 0.9rem; border-radius: 16px; }
+            .btn { padding: 0.5rem 0.9rem; font-size: 0.8rem; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+        }
+        .focus-visible:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <aside id="sidebar" aria-label="Navegação principal">
+            <div class="sidebar-header">
+                <span class="logo">LIFE OS</span>
+                <button class="sidebar-toggle" id="sidebarToggle" aria-label="Expandir ou recolher menu">☰</button>
+            </div>
+            <nav id="sidebarNav"></nav>
+            <div class="sidebar-footer">
+                <button class="nav-item" data-route="settings" aria-label="Configurações">
+                    <span class="nav-icon" id="icon-settings"></span>
+                    <span class="nav-label">Configurações</span>
+                </button>
+            </div>
+        </aside>
+        <main id="main">
+            <header id="topbar">
+                <h1 class="page-title" id="pageTitle">Home</h1>
+                <button class="btn btn-sm btn-ghost search-btn" id="globalSearchBtn" aria-label="Buscar">🔍 Buscar</button>
+            </header>
+            <div id="page-content"></div>
+        </main>
+    </div>
+    <div id="modal-root"></div>
+    <div id="toast-root" class="toast-root"></div>
+    <div id="command-palette" class="command-palette" role="dialog" aria-label="Paleta de comandos">
+        <input type="text" id="cmdInput" placeholder="Digite um comando... (Ctrl+K)" aria-label="Buscar comandos">
+        <div class="cmds" id="cmdList"></div>
+    </div>
+    <div id="onboarding-root"></div>
+    <script>
+        'use strict';
+        // ===== CONFIG =====
+        const CONFIG = {
+            APP_NAME: 'LIFE OS',
+            VERSION: '1.0.0',
+            STORAGE_KEY: 'lifeos_state',
+            XP_REWARDS: { habit: 10, task: 15, quest: 30, workout: 50, reflection: 20, diary: 10, goal: 25, focus: 10 },
+            LEVEL_BASE: 100,
+            LEVEL_GROWTH: 50,
+            DAY_MS: 86400000,
+            HOURS_AGENDA: ['05:00','06:00','07:00','08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00','21:00'],
+            FINANCE_CATEGORIES: ['Moradia','Alimentação','Transporte','Saúde','Educação','Lazer','Assinaturas','Compras','Investimentos','Outros'],
+            QUEST_CATEGORIES: ['Saúde','Estudo','Trabalho','Finanças','Social','Pessoal','Disciplina','Criatividade'],
+            QUEST_TYPES: ['daily','weekly','monthly','one-time'],
+            MOODS: ['😄','🙂','😐','😕','😞'],
+            ENERGY_LEVELS: [1,2,3,4,5,6,7,8,9,10],
+            ALTER_EGO_DEFAULT: ['Disciplina','Impulso','Estrategista','Explorador','Criador','Atleta'],
+            WEEKDAYS: ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'],
+            MONTHS: ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'],
+            DAYS_SHORT: ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'],
+        };
+
+        // ===== ICONS (SVG inline) =====
+        const ICONS = {
+            home: '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l9-9 9 9"/><path d="M5 10v10h14V10"/></svg>',
+            routine: '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+            finance: '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg>',
+            calendar: '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
+            canalizar: '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>',
+            diary: '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
+            workout: '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5l11 11M21 3l-2 2m0 0l-2 2m2-2l2-2M3 21l2-2m0 0l2-2m-2 2l-2 2"/><path d="M15 5l-2-2-2 2 2 2 2-2zM9 19l-2-2-2 2 2 2 2-2z"/></svg>',
+            alter_egos: '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/><path d="M12 3v2M3 21h18"/></svg>',
+            goals: '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>',
+            habits: '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>',
+            quests: '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15 9 22 9 16 14 19 22 12 17 5 22 8 14 2 9 9 9"/></svg>',
+            stats: '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>',
+            settings: '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>',
+            plus: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>',
+            check: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
+            trash: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>',
+            edit: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>',
+            duplicate: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>',
+            close: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
+            search: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>',
+            fire: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>',
+        };
+
+        // ===== STATE =====
+        const DEFAULT_STATE = {
+            user: { name: '', wakeTime: '07:00', sleepTime: '23:00', goal: '', focusArea: 'Disciplina', onboardingDone: false, firstDay: 'mon' },
+            settings: { theme: 'neon', visualIntensity: 'medium', notifications: true, animations: true, currency: 'BRL', unit: 'metric', weekStart: 1 },
+            tasks: [],
+            habits: [],
+            goals: [],
+            quests: [],
+            events: [],
+            diary: [],
+            workouts: [],
+            exercises: [],
+            finances: [],
+            patrimony: [],
+            alterEgos: [],
+            alterEgoActions: [],
+            focusSessions: [],
+            health: [],
+            xpLog: [],
+            completedActions: {},
+            stats: { totalXP: 0, level: 1, xpInCurrentLevel: 0, daysActive: [], completedHabits: 0, completedQuests: 0, completedTasks: 0, focusMinutes: 0, workoutMinutes: 0, workoutVolume: 0, income: 0, expenses: 0 },
+        };
+
+        let appState = loadState();
+        let currentRoute = 'home';
+        let currentDate = new Date();
+        let selectedDiaryDate = new Date();
+        let currentMonth = new Date().getMonth();
+        let currentYear = new Date().getFullYear();
+        let agendaStartHour = 5;
+        let agendaDays = 7;
+        let focusTimerInterval = null;
+        let focusRemaining = 0;
+        let focusTotal = 0;
+        let focusPaused = false;
+        let activeWorkout = null;
+        let workoutTimerInterval = null;
+        let workoutSeconds = 0;
+        let charts = {};
+
+        function defaultAlterEgos() {
+            return [
+                { id: 'ae_alfredo', name: 'Alfredo', description: 'Disciplina', avatar: '🛡️', color: '#3b82f6', principles: 'Fazer o que precisa ser feito', habits: [], quests: [], positive: [], negative: [] },
+                { id: 'ae_beto', name: 'Beto', description: 'Impulso', avatar: '⚡', color: '#f59e0b', principles: 'Agir por impulso', habits: [], quests: [], positive: [], negative: [] },
+                { id: 'ae_estrategista', name: 'Estrategista', description: 'Planejamento', avatar: '🧠', color: '#8b5cf6', principles: 'Planejar antes de agir', habits: [], quests: [], positive: [], negative: [] },
+                { id: 'ae_explorador', name: 'Explorador', description: 'Curiosidade', avatar: '🧭', color: '#06b6d4', principles: 'Explorar o novo', habits: [], quests: [], positive: [], negative: [] },
+                { id: 'ae_criador', name: 'Criador', description: 'Criatividade', avatar: '🎨', color: '#ec4899', principles: 'Criar algo novo', habits: [], quests: [], positive: [], negative: [] },
+                { id: 'ae_atleta', name: 'Atleta', description: 'Saúde', avatar: '💪', color: '#10b981', principles: 'Cuidar do corpo', habits: [], quests: [], positive: [], negative: [] },
+            ];
+        }
+
+        function defaultState() {
+            const state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+            state.alterEgos = defaultAlterEgos();
+            return state;
+        }
+
+        function saveState() {
+            try { localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(appState)); } catch(e) { console.error('Erro ao salvar', e); }
+        }
+
+        function loadState() {
+            try {
+                const saved = localStorage.getItem(CONFIG.STORAGE_KEY);
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    // merge defaults
+                    const merged = { ...JSON.parse(JSON.stringify(DEFAULT_STATE)), ...parsed };
+                    if (!merged.alterEgos || merged.alterEgos.length === 0) merged.alterEgos = defaultAlterEgos();
+                    merged.settings = { ...JSON.parse(JSON.stringify(DEFAULT_STATE.settings)), ...merged.settings };
+                    merged.user = { ...JSON.parse(JSON.stringify(DEFAULT_STATE.user)), ...merged.user };
+                    return merged;
+                }
+            } catch(e) { console.error('Erro ao carregar', e); }
+            return defaultState();
+        }
+
+        // ===== UTILS =====
+        function uid() { return 'id_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8); }
+        function formatDateBR(date) { return new Date(date).toLocaleDateString('pt-BR'); }
+        function formatDateISO(date) { const d = new Date(date); return d.toISOString().slice(0,10); }
+        function formatTimeBR(date) { return new Date(date).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}); }
+        function todayISO() { return formatDateISO(new Date()); }
+        function dateFromISO(iso) { const [y,m,d] = iso.split('-').map(Number); return new Date(y, m-1, d); }
+        function addDays(date, days) { const d = new Date(date); d.setDate(d.getDate() + days); return d; }
+        function startOfWeek(date) { const d = new Date(date); const day = d.getDay(); const diff = (day + 6) % 7; d.setDate(d.getDate() - diff); return d; }
+        function startOfMonth(date) { return new Date(date.getFullYear(), date.getMonth(), 1); }
+        function endOfMonth(date) { return new Date(date.getFullYear(), date.getMonth() + 1, 0); }
+        function formatCurrency(value) { return new Intl.NumberFormat('pt-BR', { style:'currency', currency:'BRL' }).format(value || 0); }
+        function formatNumber(value) { return new Intl.NumberFormat('pt-BR').format(value || 0); }
+        function escapeHTML(str) { if (!str) return ''; const div = document.createElement('div'); div.textContent = str; return div.innerHTML; }
+        function debounce(fn, ms) { let t; return function(...args) { clearTimeout(t); t = setTimeout(() => fn.apply(this, args), ms); }; }
+        function todayKey() { return todayISO(); }
+        function isToday(iso) { return iso === todayISO(); }
+        function isSameDay(a, b) { return a.toDateString() === b.toDateString(); }
+        function getWeekDays(startDate) { return Array.from({length:7}, (_,i) => addDays(startDate, i)); }
+        function clamp(n, min, max) { return Math.min(max, Math.max(min, n)); }
+        function safeNumber(n, def=0) { const v = Number(n); return isNaN(v) ? def : v; }
+        function getGreeting() { const h = new Date().getHours(); if (h < 5) return 'Boa madrugada'; if (h < 12) return 'Bom dia'; if (h < 18) return 'Boa tarde'; return 'Boa noite'; }
+        function getDayName(date) { return CONFIG.WEEKDAYS[date.getDay()]; }
+        function getMonthName(m) { return CONFIG.MONTHS[m]; }
+
+        function generateId(prefix) { return prefix + '_' + uid(); }
+
+        function todayStart() { const d = new Date(); d.setHours(0,0,0,0); return d; }
+        function timeToMinutes(timeStr) { const [h,m] = timeStr.split(':').map(Number); return h*60 + m; }
+        function minutesToTime(min) { const h = Math.floor(min/60); const m = min % 60; return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`; }
+
+        // ===== XP SYSTEM =====
+        function getLevelFromXP(totalXP) {
+            let level = 1, remaining = totalXP;
+            while (remaining >= getXPForNextLevel(level)) { remaining -= getXPForNextLevel(level); level++; }
+            return { level, xpInCurrentLevel: remaining, xpForNextLevel: getXPForNextLevel(level) };
+        }
+        function getXPForNextLevel(level) { return CONFIG.LEVEL_BASE + (level - 1) * CONFIG.LEVEL_GROWTH; }
+        function getCurrentLevelInfo() { const totalXP = appState.stats.totalXP; return getLevelFromXP(totalXP); }
+        function addXP(amount, reason, actionId) {
+            if (!actionId) actionId = uid();
+            if (appState.completedActions[actionId]) return;
+            appState.completedActions[actionId] = true;
+            amount = safeNumber(amount, 0);
+            if (amount <= 0) return;
+            appState.stats.totalXP += amount;
+            appState.xpLog.push({ amount, reason, actionId, date: todayISO(), timestamp: Date.now() });
+            const info = getCurrentLevelInfo();
+            appState.stats.level = info.level;
+            appState.stats.xpInCurrentLevel = info.xpInCurrentLevel;
+            showToast(`+${amount} XP — ${reason}`, 'success');
+            spawnXPAnimation(amount);
+            saveState();
+            updateHomeIfActive();
+        }
+        function spawnXPAnimation(amount) {
+            const el = document.createElement('div');
+            el.className = 'xp-float';
+            el.textContent = `+${amount} XP`;
+            el.style.left = (Math.random() * 40 + 30) + '%';
+            el.style.top = (Math.random() * 30 + 30) + '%';
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 1200);
+        }
+        function canComplete(actionId) { return !appState.completedActions[actionId]; }
+
+        // ===== TOASTS =====
+        function showToast(message, type='info') {
+            const root = document.getElementById('toast-root');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            toast.setAttribute('role','status');
+            root.appendChild(toast);
+            setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateX(100%)'; setTimeout(() => toast.remove(), 300); }, 3000);
+        }
+
+        // ===== MODAL =====
+        function openModal(html) {
+            closeModal();
+            const root = document.getElementById('modal-root');
+            const overlay = document.createElement('div');
+            overlay.className = 'modal-overlay';
+            overlay.innerHTML = `<div class="modal">${html}</div>`;
+            overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
+            root.appendChild(overlay);
+            document.body.style.overflow = 'hidden';
+        }
+        function closeModal() {
+            document.getElementById('modal-root').innerHTML = '';
+            document.body.style.overflow = '';
+        }
+        function modalHeader(title) { return `<h3>${escapeHTML(title)}</h3>`; }
+
+        // ===== ROUTER =====
+        function navigate(route) {
+            currentRoute = route;
+            window.location.hash = '#/' + route;
+            renderCurrentPage();
+        }
+        function handleHashChange() {
+            const hash = window.location.hash.replace('#/','').split('?')[0] || 'home';
+            currentRoute = hash;
+            renderCurrentPage();
+        }
+        window.addEventListener('hashchange', handleHashChange);
+
+        const ROUTES = {
+            home: { title: 'Home', icon: 'home' },
+            routine: { title: 'Rotina', icon: 'routine' },
+            finance: { title: 'Finanças', icon: 'finance' },
+            calendar: { title: 'Calendário', icon: 'calendar' },
+            canalizar: { title: 'Canalização', icon: 'canalizar' },
+            diary: { title: 'Diário', icon: 'diary' },
+            workouts: { title: 'Treinos', icon: 'workout' },
+            alter_egos: { title: 'Alter Egos', icon: 'alter_egos' },
+            goals: { title: 'Metas', icon: 'goals' },
+            habits: { title: 'Hábitos', icon: 'habits' },
+            quests: { title: 'Quests', icon: 'quests' },
+            stats: { title: 'Estatísticas', icon: 'stats' },
+            settings: { title: 'Configurações', icon: 'settings' },
+        };
+
+        function renderSidebar() {
+            const nav = document.getElementById('sidebarNav');
+            const items = Object.entries(ROUTES).filter(([key]) => key !== 'settings');
+            nav.innerHTML = items.map(([key, meta]) => {
+                const active = currentRoute === key ? 'active' : '';
+                return `<button class="nav-item ${active}" data-route="${key}" aria-label="${meta.title}" title="${meta.title}">
+                    <span class="nav-icon">${ICONS[meta.icon] || ''}</span>
+                    <span class="nav-label">${meta.title}</span>
+                </button>`;
+            }).join('');
+            // settings already in footer
+            const settingsBtn = document.querySelector('#sidebar .sidebar-footer .nav-item[data-route="settings"]');
+            if (settingsBtn) {
+                settingsBtn.classList.toggle('active', currentRoute === 'settings');
+            }
+            document.querySelectorAll('#sidebar .nav-item[data-route]').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const route = e.currentTarget.dataset.route;
+                    navigate(route);
+                    if (window.innerWidth <= 768) closeSidebarMobile();
+                });
+            });
+        }
+
+        function closeSidebarMobile() {
+            document.getElementById('sidebar').classList.remove('expanded');
+        }
+        document.getElementById('sidebarToggle').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.toggle('expanded');
+        });
+
+        function renderCurrentPage() {
+            const pageTitle = ROUTES[currentRoute] ? ROUTES[currentRoute].title : 'Home';
+            document.getElementById('pageTitle').textContent = pageTitle;
+            renderSidebar();
+            const container = document.getElementById('page-content');
+            container.innerHTML = '';
+            try {
+                switch(currentRoute) {
+                    case 'home': renderHome(container); break;
+                    case 'routine': renderRoutinePage(container); break;
+                    case 'finance': renderFinancePage(container); break;
+                    case 'calendar': renderCalendarPage(container); break;
+                    case 'canalizar': renderCanalizarPage(container); break;
+                    case 'diary': renderDiaryPage(container); break;
+                    case 'workouts': renderWorkoutsPage(container); break;
+                    case 'alter_egos': renderAlterEgosPage(container); break;
+                    case 'goals': renderGoalsPage(container); break;
+                    case 'habits': renderHabitsPage(container); break;
+                    case 'quests': renderQuestsPage(container); break;
+                    case 'stats': renderStatsPage(container); break;
+                    case 'settings': renderSettingsPage(container); break;
+                    default: renderHome(container);
+                }
+            } catch(e) {
+                console.error('Erro ao renderizar', e);
+                container.innerHTML = `<div class="glass-card"><h2>Erro ao renderizar página</h2><p>${escapeHTML(e.message)}</p></div>`;
+            }
+            updateTopbarActions();
+        }
+
+        function updateTopbarActions() {
+            const btn = document.getElementById('globalSearchBtn');
+            if (btn) btn.onclick = openCommandPalette;
+        }
+
+        // ===== ONBOARDING =====
+        function checkOnboarding() {
+            if (!appState.user.onboardingDone) {
+                showOnboarding();
+            }
+        }
+        function showOnboarding() {
+            const root = document.getElementById('onboarding-root');
+            const steps = [
+                { title: 'Bem-vindo ao LIFE OS', html: `<p>Seu sistema operacional pessoal.</p><p class="text-muted">Integre rotina, hábitos, metas, finanças, treinos e evolução pessoal.</p>` },
+                { title: 'Qual é o seu nome?', field: 'name', html: `<div class="form-group"><label class="label" for="ob_name">Nome</label><input class="input" id="ob_name" type="text" placeholder="Seu nome" value="${escapeHTML(appState.user.name)}"></div>` },
+                { title: 'Qual é o seu objetivo principal?', field: 'goal', html: `<div class="form-group"><label class="label" for="ob_goal">Objetivo principal</label><input class="input" id="ob_goal" type="text" placeholder="Ex: Ter mais disciplina e saúde" value="${escapeHTML(appState.user.goal)}"></div>` },
+                { title: 'Sua rotina', html: `<div class="form-group"><label class="label">Horário de acordar</label><input class="input" type="time" id="ob_wake" value="${appState.user.wakeTime}"></div><div class="form-group"><label class="label">Horário de dormir</label><input class="input" type="time" id="ob_sleep" value="${appState.user.sleepTime}"></div>` },
+                { title: 'Áreas prioritárias', html: `<div class="form-group"><label class="label">Escolha suas áreas prioritárias</label><div class="checkbox-list">${['Disciplina','Saúde','Finanças','Carreira','Estudo','Relacionamentos','Criatividade'].map(a => `<label><input type="checkbox" class="ob_areas" value="${a}"> ${a}</label>`).join('')}</div></div>` },
+                { title: 'Qual será seu primeiro hábito?', html: `<div class="form-group"><label class="label" for="ob_habit">Hábito</label><input class="input" id="ob_habit" type="text" placeholder="Ex: Beber água ao acordar"></div>` },
+                { title: 'Seu Alter Ego principal', html: `<div class="form-group"><label class="label" for="ob_ae">Nome do Alter Ego (ex: Alfredo)</label><input class="input" id="ob_ae" type="text" value="${escapeHTML(appState.alterEgos[0]?.name || 'Alfredo')}"></div><p>Representa sua disciplina e foco.</p>` },
+            ];
+            let stepIndex = 0;
+            function renderStep() {
+                const step = steps[stepIndex];
+                root.innerHTML = `<div class="onboarding-overlay"><div class="glass-card onboarding-card">
+                    <h2 class="card-title">${escapeHTML(step.title)}</h2>
+                    <div class="ob-content">${step.html}</div>
+                    <div class="modal-actions" style="margin-top:1.5rem;">
+                        ${stepIndex > 0 ? `<button class="btn btn-ghost" id="ob_back">Voltar</button>` : ''}
+                        <button class="btn btn-primary" id="ob_next">${stepIndex === steps.length-1 ? 'Concluir' : 'Avançar'}</button>
+                    </div>
+                </div></div>`;
+                document.getElementById('ob_next').addEventListener('click', () => {
+                    if (stepIndex === 0) { stepIndex++; renderStep(); return; }
+                    if (stepIndex === 1) { appState.user.name = document.getElementById('ob_name')?.value || 'Usuário'; }
+                    if (stepIndex === 2) { appState.user.goal = document.getElementById('ob_goal')?.value || ''; }
+                    if (stepIndex === 3) { appState.user.wakeTime = document.getElementById('ob_wake')?.value || '07:00'; appState.user.sleepTime = document.getElementById('ob_sleep')?.value || '23:00'; }
+                    if (stepIndex === 4) { /* areas not stored */ }
+                    if (stepIndex === 5) { const h = document.getElementById('ob_habit')?.value; if (h) appState.habits.push({ id: uid(), name: h, category: 'Saúde', frequency: 'daily', trigger: '', action: '', xp: 10, streak: 0, bestStreak: 0, totalCompletions: 0, createdAt: todayISO() }); }
+                    if (stepIndex === 6) { const aeName = document.getElementById('ob_ae')?.value; if (aeName && appState.alterEgos[0]) appState.alterEgos[0].name = aeName; }
+                    if (stepIndex === steps.length - 1) {
+                        appState.user.onboardingDone = true;
+                        saveState();
+                        root.innerHTML = '';
+                        showToast('Seu Life OS está pronto!', 'success');
+                        renderCurrentPage();
+                        return;
+                    }
+                    stepIndex++;
+                    renderStep();
+                });
+                const backBtn = document.getElementById('ob_back');
+                if (backBtn) backBtn.addEventListener('click', () => { stepIndex--; renderStep(); });
+            }
+            renderStep();
+        }
+
+        // ===== COMMAND PALETTE =====
+        function openCommandPalette() {
+            const cp = document.getElementById('command-palette');
+            cp.classList.add('open');
+            const input = document.getElementById('cmdInput');
+            input.value = '';
+            input.focus();
+            renderCommands('');
+        }
+        function closeCommandPalette() { document.getElementById('command-palette').classList.remove('open'); }
+        document.getElementById('cmdInput').addEventListener('input', (e) => renderCommands(e.target.value));
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); openCommandPalette(); }
+            if (e.key === 'Escape') { closeCommandPalette(); closeModal(); }
+        });
+        function renderCommands(query) {
+            const list = document.getElementById('cmdList');
+            const commands = [
+                { label: 'Nova tarefa', action: () => openTaskModal() },
+                { label: 'Novo evento', action: () => openEventModal() },
+                { label: 'Nova nota', action: () => openDiaryEntryModal(todayISO()) },
+                { label: 'Nova despesa', action: () => openFinanceModal('expense') },
+                { label: 'Nova receita', action: () => openFinanceModal('income') },
+                { label: 'Iniciar foco', action: () => startFocusMode() },
+                { label: 'Abrir diário', action: () => navigate('diary') },
+                { label: 'Abrir treino', action: () => navigate('workouts') },
+                { label: 'Abrir finanças', action: () => navigate('finance') },
+                { label: 'Abrir configurações', action: () => navigate('settings') },
+            ];
+            const filtered = commands.filter(c => c.label.toLowerCase().includes(query.toLowerCase()));
+            list.innerHTML = filtered.map((c, i) => `<div class="cmd-item ${i===0?'selected':''}" data-index="${i}">${ICONS.search} <span>${escapeHTML(c.label)}</span></div>`).join('') || '<div class="empty-state">Nenhum comando</div>';
+            list.querySelectorAll('.cmd-item').forEach(item => {
+                item.addEventListener('click', () => { const idx = item.dataset.index; filtered[idx].action(); closeCommandPalette(); });
+            });
+        }
+        document.addEventListener('click', (e) => {
+            const cp = document.getElementById('command-palette');
+            if (cp.classList.contains('open') && !cp.contains(e.target)) closeCommandPalette();
+        });
+
+        // ===== HOME =====
+        function renderHome(container) {
+            const greeting = getGreeting();
+            const name = appState.user.name || 'Usuário';
+            const today = new Date();
+            const dateStr = today.toLocaleDateString('pt-BR', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+            const levelInfo = getCurrentLevelInfo();
+            const tasksToday = appState.tasks.filter(t => t.dueDate === todayISO() && !t.completed);
+            const habitsToday = appState.habits.filter(h => !isHabitCompletedToday(h.id));
+            const activeQuests = appState.quests.filter(q => q.status !== 'completed' && !q.completed);
+            const routineEvents = getEventsForDate(todayISO()).sort((a,b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
+            const totalTodayItems = tasksToday.length + habitsToday.length + routineEvents.filter(e => !e.completed).length;
+            const completedTodayItems = appState.tasks.filter(t => t.dueDate === todayISO() && t.completed).length + appState.habits.filter(h => isHabitCompletedToday(h.id)).length + routineEvents.filter(e => e.completed && isToday(e.date)).length;
+            const percent = totalTodayItems > 0 ? Math.round((completedTodayItems / totalTodayItems) * 100) : 0;
+            const xpPercent = levelInfo.xpForNextLevel > 0 ? Math.round((levelInfo.xpInCurrentLevel / levelInfo.xpForNextLevel) * 100) : 0;
+
+            container.innerHTML = `
+                <div class="page-grid">
+                    <div class="glass-card" style="grid-column: span 2;">
+                        <h2 style="font-size:1.8rem;font-weight:800;">${greeting}, ${escapeHTML(name)}</h2>
+                        <p class="card-subtitle" style="text-transform:uppercase;letter-spacing:0.05em;">${dateStr}</p>
+                    </div>
+                </div>
+                <div class="page-grid grid-2" style="margin-top:1.25rem;">
+                    <div class="glass-card">
+                        <div class="card-title">PROGRESSO DO DIA</div>
+                        <div style="font-size:2.5rem;font-weight:900;color:var(--cyan);text-shadow:0 0 20px rgba(34,211,238,0.5);">${appState.stats.totalXP} XP</div>
+                        <p class="card-subtitle">Faltam ${levelInfo.xpForNextLevel - levelInfo.xpInCurrentLevel} XP para Nível ${levelInfo.level + 1}</p>
+                        <div class="progress-bar" style="height:12px;"><div class="progress-fill" style="width:${xpPercent}%;"></div></div>
+                        <div style="display:flex;justify-content:space-between;margin-top:1rem;">
+                            <span>Nível ${levelInfo.level}</span>
+                            <span>${percent}% DO DIA</span>
+                        </div>
+                        <div class="progress-bar" style="margin-top:0.5rem;"><div class="progress-fill" style="width:${percent}%;"></div></div>
+                    </div>
+                    <div class="glass-card">
+                        <div class="card-title">QUESTS ATIVAS</div>
+                        ${activeQuests.length > 0 ? activeQuests.slice(0,3).map(q => renderQuestItem(q)).join('') : '<div class="empty-state">Nenhuma quest ativa.</div>'}
+                        <button class="btn btn-sm btn-ghost" onclick="navigate('quests')">Ver todas</button>
+                    </div>
+                </div>
+                <div class="page-grid grid-2" style="margin-top:1.25rem;">
+                    <div class="glass-card">
+                        <div class="card-title">ROTINA DE HOJE</div>
+                        ${routineEvents.length > 0 ? routineEvents.slice(0,4).map(e => renderRoutineEventItem(e)).join('') : '<div class="empty-state">Nenhum evento hoje.</div>'}
+                        <button class="btn btn-sm btn-ghost" onclick="navigate('routine')">Ver rotina completa</button>
+                    </div>
+                    <div class="glass-card">
+                        <div class="card-title">HÁBITOS DE HOJE</div>
+                        ${habitsToday.length > 0 ? habitsToday.slice(0,4).map(h => renderHabitItem(h)).join('') : '<div class="empty-state">Nenhum hábito pendente.</div>'}
+                        <button class="btn btn-sm btn-ghost" onclick="navigate('habits')">Gerenciar hábitos</button>
+                    </div>
+                </div>
+                <div class="page-grid grid-3" style="margin-top:1.25rem;">
+                    <div class="glass-card">
+                        <div class="card-title">FOCO</div>
+                        <p>${appState.stats.focusMinutes} min de foco acumulados.</p>
+                        <button class="btn btn-sm btn-primary" onclick="startFocusMode()">Iniciar foco</button>
+                    </div>
+                    <div class="glass-card">
+                        <div class="card-title">ALTER EGO</div>
+                        <div id="mini-alter-ego"></div>
+                    </div>
+                    <div class="glass-card">
+                        <div class="card-title">ESTADO</div>
+                        <div id="mini-health"></div>
+                    </div>
+                </div>
+            `;
+            renderMiniAlterEgo();
+            renderMiniHealth();
+        }
+
+        function renderMiniAlterEgo() {
+            const container = document.getElementById('mini-alter-ego');
+            if (!container) return;
+            const dominant = getDominantAlterEgo(7);
+            if (dominant) {
+                container.innerHTML = `<p><strong>${escapeHTML(dominant.alterEgo.name)}</strong> está dominando (${dominant.percent}%).</p>`;
+            } else {
+                container.innerHTML = '<p>Sem ações registradas.</p>';
+            }
+        }
+        function renderMiniHealth() {
+            const container = document.getElementById('mini-health');
+            if (!container) return;
+            const todayHealth = appState.health.find(h => h.date === todayISO());
+            if (todayHealth) {
+                container.innerHTML = `<p>Humor: ${todayHealth.mood || 'N/A'} | Energia: ${todayHealth.energy || 'N/A'}/10</p>`;
+            } else {
+                container.innerHTML = '<p>Nenhum registro de saúde hoje.</p>';
+            }
+        }
+
+        function updateHomeIfActive() {
+            if (currentRoute === 'home') renderCurrentPage();
+        }
+
+        function renderQuestItem(q) {
+            const done = q.completed;
+            return `<div class="list-item">
+                <div class="item-icon">${ICONS.quests}</div>
+                <div class="item-content">
+                    <div class="item-title">${escapeHTML(q.name)}</div>
+                    <div class="item-sub">${escapeHTML(q.category)} · ${q.xp} XP</div>
+                </div>
+                <div class="item-actions">
+                    ${done ? '<span class="badge badge-success">Concluída</span>' : `<button class="btn btn-sm btn-success" onclick="completeQuest('${q.id}')">Concluir</button>`}
+                </div>
+            </div>`;
+        }
+
+        function renderRoutineEventItem(e) {
+            const done = e.completed;
+            return `<div class="list-item">
+                <div class="item-icon">${ICONS.routine}</div>
+                <div class="item-content">
+                    <div class="item-title">${e.startTime} — ${escapeHTML(e.name)}</div>
+                    <div class="item-sub">${e.duration || 30} min · ${escapeHTML(e.category || 'Geral')}</div>
+                </div>
+                <div class="item-actions">
+                    ${done ? '<span class="badge badge-success">Feito</span>' : `<button class="btn btn-sm btn-success" onclick="completeEvent('${e.id}')">Concluir</button>`}
+                </div>
+            </div>`;
+        }
+
+        function renderHabitItem(h) {
+            const done = isHabitCompletedToday(h.id);
+            return `<div class="list-item">
+                <div class="item-icon">${ICONS.habits}</div>
+                <div class="item-content">
+                    <div class="item-title">${escapeHTML(h.name)}</div>
+                    <div class="item-sub">Streak: ${h.streak} 🔥 | ${h.totalCompletions} total</div>
+                </div>
+                <div class="item-actions">
+                    ${done ? '<span class="badge badge-success">Feito</span>' : `<button class="btn btn-sm btn-success" onclick="completeHabit('${h.id}')">Concluir</button>`}
+                </div>
+            </div>`;
+        }
+
+        // ===== TASKS (for completeness, used in home and stats) =====
+        function openTaskModal() {
+            const html = modalHeader('Nova tarefa') + `
+                <div class="form-group"><label class="label">Nome</label><input class="input" id="task_name" type="text" placeholder="Tarefa"></div>
+                <div class="form-group"><label class="label">Prioridade</label><select class="select" id="task_priority"><option>Normal</option><option>Baixa</option><option>Importante</option><option>Urgente</option></select></div>
+                <div class="form-group"><label class="label">Data</label><input class="input" id="task_date" type="date" value="${todayISO()}"></div>
+                <div class="form-group"><label class="label">Categoria</label><input class="input" id="task_category" type="text" placeholder="Ex: Trabalho"></div>
+                <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" onclick="createTaskFromModal()">Criar</button></div>
+            `;
+            openModal(html);
+        }
+        function createTaskFromModal() {
+            const name = document.getElementById('task_name')?.value.trim();
+            if (!name) return showToast('Digite um nome', 'warning');
+            const priority = document.getElementById('task_priority')?.value || 'Normal';
+            const dueDate = document.getElementById('task_date')?.value || todayISO();
+            const category = document.getElementById('task_category')?.value || 'Geral';
+            appState.tasks.push({ id: uid(), name, priority, dueDate, category, completed: false, createdAt: todayISO(), xp: CONFIG.XP_REWARDS.task });
+            saveState();
+            closeModal();
+            showToast('Tarefa criada!', 'success');
+            renderCurrentPage();
+        }
+        function completeTask(id) {
+            const task = appState.tasks.find(t => t.id === id);
+            if (!task) return;
+            if (task.completed) return showToast('Tarefa já concluída', 'info');
+            task.completed = true;
+            appState.stats.completedTasks++;
+            addXP(task.xp, 'Tarefa concluída', 'task_' + id);
+            saveState();
+            renderCurrentPage();
+        }
+        function deleteTask(id) {
+            appState.tasks = appState.tasks.filter(t => t.id !== id);
+            saveState();
+            renderCurrentPage();
+        }
+
+        // ===== HABITS =====
+        function renderHabitsPage(container) {
+            container.innerHTML = `
+                <div class="page-grid">
+                    <div class="glass-card" style="display:flex;justify-content:space-between;align-items:center;">
+                        <h2 class="card-title">HÁBITOS</h2>
+                        <button class="btn btn-primary btn-sm" onclick="openHabitModal()">${ICONS.plus} Novo hábito</button>
+                    </div>
+                </div>
+                <div class="page-grid grid-2" style="margin-top:1.25rem;">
+                    ${appState.habits.map(h => `
+                        <div class="glass-card">
+                            <div class="list-item" style="border:none;background:transparent;padding:0;">
+                                <div class="item-icon">${ICONS.habits}</div>
+                                <div class="item-content">
+                                    <div class="item-title">${escapeHTML(h.name)}</div>
+                                    <div class="item-sub">${escapeHTML(h.category)} · ${h.frequency}</div>
+                                    <div class="item-sub">Streak: ${h.streak} 🔥 | Melhor: ${h.bestStreak} | Total: ${h.totalCompletions}</div>
+                                    <div class="item-sub">Gatilho: ${escapeHTML(h.trigger || 'N/A')} | Ação: ${escapeHTML(h.action || 'N/A')}</div>
+                                </div>
+                                <div class="item-actions">
+                                    <button class="btn btn-sm btn-success" onclick="completeHabit('${h.id}')">Concluir</button>
+                                    <button class="btn btn-sm btn-ghost" onclick="openHabitModal('${h.id}')">Editar</button>
+                                    <button class="btn btn-sm btn-danger" onclick="deleteHabit('${h.id}')">${ICONS.trash}</button>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('') || '<div class="empty-state">Nenhum hábito criado.</div>'}
+                </div>
+            `;
+        }
+        function openHabitModal(id) {
+            const h = id ? appState.habits.find(x => x.id === id) : null;
+            const html = modalHeader(h ? 'Editar hábito' : 'Novo hábito') + `
+                <div class="form-group"><label class="label">Nome</label><input class="input" id="habit_name" type="text" value="${escapeHTML(h?.name || '')}" placeholder="Ex: Ler"></div>
+                <div class="form-group"><label class="label">Categoria</label><input class="input" id="habit_category" type="text" value="${escapeHTML(h?.category || '')}" placeholder="Ex: Estudo"></div>
+                <div class="form-group"><label class="label">Frequência</label><select class="select" id="habit_frequency"><option value="daily" ${h?.frequency==='daily'?'selected':''}>Diária</option><option value="weekly" ${h?.frequency==='weekly'?'selected':''}>Semanal</option><option value="custom" ${h?.frequency==='custom'?'selected':''}>Customizada</option></select></div>
+                <div class="form-group"><label class="label">Gatilho (implementation intention)</label><input class="input" id="habit_trigger" type="text" value="${escapeHTML(h?.trigger || '')}" placeholder="Depois de..."></div>
+                <div class="form-group"><label class="label">Ação (então farei...)</label><input class="input" id="habit_action" type="text" value="${escapeHTML(h?.action || '')}" placeholder="Vou..."></div>
+                <div class="form-group"><label class="label">XP</label><input class="input" id="habit_xp" type="number" value="${h?.xp || CONFIG.XP_REWARDS.habit}"></div>
+                <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" onclick="saveHabit('${id || ''}')">Salvar</button></div>
+            `;
+            openModal(html);
+        }
+        function saveHabit(id) {
+            const name = document.getElementById('habit_name')?.value.trim();
+            if (!name) return showToast('Nome obrigatório', 'warning');
+            const category = document.getElementById('habit_category')?.value || 'Geral';
+            const frequency = document.getElementById('habit_frequency')?.value || 'daily';
+            const trigger = document.getElementById('habit_trigger')?.value || '';
+            const action = document.getElementById('habit_action')?.value || '';
+            const xp = safeNumber(document.getElementById('habit_xp')?.value, CONFIG.XP_REWARDS.habit);
+            if (id) {
+                const h = appState.habits.find(x => x.id === id);
+                if (h) Object.assign(h, { name, category, frequency, trigger, action, xp });
+            } else {
+                appState.habits.push({ id: uid(), name, category, frequency, trigger, action, xp, streak: 0, bestStreak: 0, totalCompletions: 0, createdAt: todayISO() });
+            }
+            saveState();
+            closeModal();
+            renderCurrentPage();
+        }
+        function deleteHabit(id) {
+            if (!confirm('Excluir hábito?')) return;
+            appState.habits = appState.habits.filter(h => h.id !== id);
+            saveState();
+            renderCurrentPage();
+        }
+        function isHabitCompletedToday(habitId) {
+            const today = todayISO();
+            return appState.completedActions['habit_' + habitId + '_' + today] || false;
+        }
+        function completeHabit(id) {
+            const h = appState.habits.find(x => x.id === id);
+            if (!h) return;
+            const actionKey = 'habit_' + id + '_' + todayISO();
+            if (appState.completedActions[actionKey]) return showToast('Hábito já concluído hoje', 'info');
+            appState.completedActions[actionKey] = true;
+            h.streak = (h.streak || 0) + 1;
+            if (h.streak > (h.bestStreak || 0)) h.bestStreak = h.streak;
+            h.totalCompletions = (h.totalCompletions || 0) + 1;
+            appState.stats.completedHabits++;
+            addXP(h.xp || CONFIG.XP_REWARDS.habit, 'Hábito concluído', actionKey);
+            // Registra ação para alter ego Disciplina
+            registerAlterEgoAction('ae_alfredo', 'positive', 'Hábito: ' + h.name);
+            saveState();
+            renderCurrentPage();
+        }
+
+        // ===== QUESTS =====
+        function renderQuestsPage(container) {
+            container.innerHTML = `
+                <div class="page-grid">
+                    <div class="glass-card" style="display:flex;justify-content:space-between;align-items:center;">
+                        <h2 class="card-title">QUESTS</h2>
+                        <button class="btn btn-primary btn-sm" onclick="openQuestModal()">${ICONS.plus} Nova quest</button>
+                    </div>
+                </div>
+                <div class="page-grid grid-2" style="margin-top:1.25rem;">
+                    ${appState.quests.map(q => `
+                        <div class="glass-card">
+                            <div class="list-item" style="border:none;background:transparent;padding:0;">
+                                <div class="item-icon">${ICONS.quests}</div>
+                                <div class="item-content">
+                                    <div class="item-title">${escapeHTML(q.name)}</div>
+                                    <div class="item-sub">${escapeHTML(q.description || '')}</div>
+                                    <div class="item-sub">Categoria: ${escapeHTML(q.category)} · Tipo: ${q.type} · Dificuldade: ${q.difficulty} · XP: ${q.xp}</div>
+                                    <div class="item-sub">Prazo: ${q.deadline || 'Sem prazo'} · Status: ${q.completed ? 'Concluída' : 'Ativa'}</div>
+                                    <div class="progress-bar" style="margin-top:0.5rem;"><div class="progress-fill" style="width:${q.completed ? 100 : 0}%"></div></div>
+                                </div>
+                                <div class="item-actions">
+                                    ${!q.completed ? `<button class="btn btn-sm btn-success" onclick="completeQuest('${q.id}')">Concluir</button>` : '<span class="badge badge-success">Feita</span>'}
+                                    <button class="btn btn-sm btn-ghost" onclick="openQuestModal('${q.id}')">Editar</button>
+                                    <button class="btn btn-sm btn-danger" onclick="deleteQuest('${q.id}')">${ICONS.trash}</button>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('') || '<div class="empty-state">Nenhuma quest criada.</div>'}
+                </div>
+            `;
+        }
+        function openQuestModal(id) {
+            const q = id ? appState.quests.find(x => x.id === id) : null;
+            const html = modalHeader(q ? 'Editar quest' : 'Nova quest') + `
+                <div class="form-group"><label class="label">Nome</label><input class="input" id="quest_name" type="text" value="${escapeHTML(q?.name || '')}" placeholder="Ex: Ler 20 páginas"></div>
+                <div class="form-group"><label class="label">Descrição</label><textarea class="textarea" id="quest_desc">${escapeHTML(q?.description || '')}</textarea></div>
+                <div class="form-group"><label class="label">Categoria</label><select class="select" id="quest_category">${CONFIG.QUEST_CATEGORIES.map(c => `<option ${q?.category===c?'selected':''}>${c}</option>`).join('')}</select></div>
+                <div class="form-group"><label class="label">Tipo</label><select class="select" id="quest_type">${CONFIG.QUEST_TYPES.map(t => `<option value="${t}" ${q?.type===t?'selected':''}>${t}</option>`).join('')}</select></div>
+                <div class="form-group"><label class="label">Dificuldade</label><select class="select" id="quest_difficulty"><option value="Fácil" ${q?.difficulty==='Fácil'?'selected':''}>Fácil</option><option value="Média" ${q?.difficulty==='Média'?'selected':''}>Média</option><option value="Difícil" ${q?.difficulty==='Difícil'?'selected':''}>Difícil</option></select></div>
+                <div class="form-group"><label class="label">XP</label><input class="input" id="quest_xp" type="number" value="${q?.xp || CONFIG.XP_REWARDS.quest}"></div>
+                <div class="form-group"><label class="label">Prazo</label><input class="input" id="quest_deadline" type="date" value="${q?.deadline || ''}"></div>
+                <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" onclick="saveQuest('${id || ''}')">Salvar</button></div>
+            `;
+            openModal(html);
+        }
+        function saveQuest(id) {
+            const name = document.getElementById('quest_name')?.value.trim();
+            if (!name) return showToast('Nome obrigatório', 'warning');
+            const description = document.getElementById('quest_desc')?.value || '';
+            const category = document.getElementById('quest_category')?.value || 'Pessoal';
+            const type = document.getElementById('quest_type')?.value || 'daily';
+            const difficulty = document.getElementById('quest_difficulty')?.value || 'Média';
+            const xp = safeNumber(document.getElementById('quest_xp')?.value, CONFIG.XP_REWARDS.quest);
+            const deadline = document.getElementById('quest_deadline')?.value || null;
+            if (id) {
+                const q = appState.quests.find(x => x.id === id);
+                if (q) Object.assign(q, { name, description, category, type, difficulty, xp, deadline });
+            } else {
+                appState.quests.push({ id: uid(), name, description, category, type, difficulty, xp, deadline, completed: false, createdAt: todayISO() });
+            }
+            saveState();
+            closeModal();
+            renderCurrentPage();
+        }
+        function completeQuest(id) {
+            const q = appState.quests.find(x => x.id === id);
+            if (!q) return;
+            if (q.completed) return showToast('Quest já concluída', 'info');
+            q.completed = true;
+            appState.stats.completedQuests++;
+            addXP(q.xp, 'Quest concluída', 'quest_' + id);
+            registerAlterEgoAction('ae_alfredo', 'positive', 'Quest: ' + q.name);
+            saveState();
+            renderCurrentPage();
+        }
+        function deleteQuest(id) {
+            if (!confirm('Excluir quest?')) return;
+            appState.quests = appState.quests.filter(q => q.id !== id);
+            saveState();
+            renderCurrentPage();
+        }
+
+        // ===== ROUTINE / EVENTS =====
+        function renderRoutinePage(container) {
+            const todayEvents = getEventsForDate(todayISO()).sort((a,b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
+            container.innerHTML = `
+                <div class="page-grid">
+                    <div class="glass-card" style="display:flex;justify-content:space-between;align-items:center;">
+                        <h2 class="card-title">ROTINA DE HOJE</h2>
+                        <button class="btn btn-primary btn-sm" onclick="openEventModal()">${ICONS.plus} Novo evento</button>
+                    </div>
+                </div>
+                <div class="page-grid grid-2" style="margin-top:1.25rem;">
+                    <div class="glass-card">
+                        <div class="card-title">Eventos de hoje</div>
+                        ${todayEvents.length > 0 ? todayEvents.map(e => renderRoutineEventItem(e)).join('') : '<div class="empty-state">Nenhum evento para hoje.</div>'}
+                    </div>
+                    <div class="glass-card">
+                        <div class="card-title">Agenda Semanal</div>
+                        <div style="overflow-x:auto;">${renderWeeklyAgenda()}</div>
+                    </div>
+                </div>
+            `;
+            attachAgendaListeners();
+        }
+        function getEventsForDate(dateISO) {
+            return appState.events.filter(e => e.date === dateISO);
+        }
+        function openEventModal(id, presetDate, presetStart) {
+            const e = id ? appState.events.find(x => x.id === id) : null;
+            const date = e?.date || presetDate || todayISO();
+            const start = e?.startTime || presetStart || '08:00';
+            const html = modalHeader(e ? 'Editar evento' : 'Novo evento') + `
+                <div class="form-group"><label class="label">Nome</label><input class="input" id="event_name" type="text" value="${escapeHTML(e?.name || '')}" placeholder="Ex: Academia"></div>
+                <div class="form-group"><label class="label">Data</label><input class="input" id="event_date" type="date" value="${date}"></div>
+                <div class="form-group"><label class="label">Horário de início</label><input class="input" id="event_start" type="time" value="${start}"></div>
+                <div class="form-group"><label class="label">Duração (min)</label><input class="input" id="event_duration" type="number" value="${e?.duration || 30}"></div>
+                <div class="form-group"><label class="label">Categoria</label><input class="input" id="event_category" type="text" value="${escapeHTML(e?.category || '')}" placeholder="Ex: Saúde"></div>
+                <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" onclick="saveEvent('${id || ''}')">Salvar</button></div>
+            `;
+            openModal(html);
+        }
+        function saveEvent(id) {
+            const name = document.getElementById('event_name')?.value.trim();
+            if (!name) return showToast('Nome obrigatório', 'warning');
+            const date = document.getElementById('event_date')?.value || todayISO();
+            const startTime = document.getElementById('event_start')?.value || '08:00';
+            const duration = safeNumber(document.getElementById('event_duration')?.value, 30);
+            const category = document.getElementById('event_category')?.value || 'Geral';
+            if (id) {
+                const e = appState.events.find(x => x.id === id);
+                if (e) Object.assign(e, { name, date, startTime, duration, category });
+            } else {
+                appState.events.push({ id: uid(), name, date, startTime, duration, category, completed: false, createdAt: todayISO() });
+            }
+            saveState();
+            closeModal();
+            renderCurrentPage();
+            checkConflicts(date);
+        }
+        function completeEvent(id) {
+            const e = appState.events.find(x => x.id === id);
+            if (!e) return;
+            if (e.completed) return showToast('Evento já concluído', 'info');
+            e.completed = true;
+            addXP(5, 'Evento concluído', 'event_' + id);
+            registerAlterEgoAction('ae_alfredo', 'positive', 'Evento: ' + e.name);
+            saveState();
+            renderCurrentPage();
+        }
+        function deleteEvent(id) {
+            if (!confirm('Excluir evento?')) return;
+            appState.events = appState.events.filter(e => e.id !== id);
+            saveState();
+            renderCurrentPage();
+        }
+        function checkConflicts(dateISO) {
+            const events = getEventsForDate(dateISO).sort((a,b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
+            for (let i = 0; i < events.length; i++) {
+                for (let j = i+1; j < events.length; j++) {
+                    const aStart = timeToMinutes(events[i].startTime);
+                    const aEnd = aStart + (events[i].duration || 30);
+                    const bStart = timeToMinutes(events[j].startTime);
+                    const bEnd = bStart + (events[j].duration || 30);
+                    if (aStart < bEnd && bStart < aEnd) {
+                        showToast(`Conflito entre ${events[i].name} e ${events[j].name}`, 'warning');
+                    }
+                }
+            }
+        }
+
+        function renderWeeklyAgenda() {
+            const start = startOfWeek(new Date());
+            const days = getWeekDays(start);
+            const hours = CONFIG.HOURS_AGENDA;
+            let html = `<div class="agenda-grid">`;
+            html += `<div class="agenda-time"></div>` + days.map(d => `<div style="text-align:center;font-size:0.7rem;padding:0.4rem;">${CONFIG.DAYS_SHORT[d.getDay()]}<br>${d.getDate()}/${d.getMonth()+1}</div>`).join('');
+            for (const hour of hours) {
+                html += `<div class="agenda-time">${hour}</div>`;
+                for (const day of days) {
+                    const dateISO = formatDateISO(day);
+                    const events = getEventsForDate(dateISO).filter(e => timeToMinutes(e.startTime) >= timeToMinutes(hour) && timeToMinutes(e.startTime) < timeToMinutes(hour)+60);
+                    html += `<div class="agenda-cell" data-date="${dateISO}" data-hour="${hour}">`;
+                    for (const ev of events) {
+                        const top = (timeToMinutes(ev.startTime) - timeToMinutes(hour)) * (40/60);
+                        const height = Math.max(20, (ev.duration || 30) * (40/60));
+                        html += `<div class="agenda-event" style="top:${top}px;height:${height}px;" data-event-id="${ev.id}" title="${escapeHTML(ev.name)}">${escapeHTML(ev.name)}</div>`;
+                    }
+                    html += `</div>`;
+                }
+            }
+            html += `</div>`;
+            return html;
+        }
+        function attachAgendaListeners() {
+            document.querySelectorAll('.agenda-cell').forEach(cell => {
+                cell.addEventListener('click', () => {
+                    const date = cell.dataset.date;
+                    const hour = cell.dataset.hour;
+                    openEventModal(null, date, hour);
+                });
+            });
+            document.querySelectorAll('.agenda-event').forEach(ev => {
+                ev.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const id = ev.dataset.eventId;
+                    openEventModal(id);
+                });
+            });
+        }
+
+        // ===== CALENDAR =====
+        function renderCalendarPage(container) {
+            const month = currentMonth;
+            const year = currentYear;
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month+1, 0);
+            const daysInMonth = lastDay.getDate();
+            const startWeekday = firstDay.getDay();
+            const prevMonthDays = new Date(year, month, 0).getDate();
+            const cells = [];
+            // prev month days
+            for (let i = startWeekday - 1; i >= 0; i--) {
+                cells.push({ day: prevMonthDays - i, month: month-1, year, other: true });
+            }
+            // current month
+            for (let d = 1; d <= daysInMonth; d++) {
+                cells.push({ day: d, month, year, other: false });
+            }
+            // next month days
+            const totalCells = cells.length;
+            const remaining = (7 - (totalCells % 7)) % 7;
+            for (let i = 1; i <= remaining; i++) {
+                cells.push({ day: i, month: month+1, year, other: true });
+            }
+            container.innerHTML = `
+                <div class="glass-card">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+                        <button class="btn btn-sm btn-ghost" onclick="changeMonth(-1)">←</button>
+                        <h2 style="font-weight:800;">${getMonthName(month)} ${year}</h2>
+                        <button class="btn btn-sm btn-ghost" onclick="changeMonth(1)">→</button>
+                    </div>
+                    <div class="calendar-grid">
+                        ${CONFIG.DAYS_SHORT.map(d => `<div style="text-align:center;font-size:0.7rem;color:var(--muted);">${d}</div>`).join('')}
+                        ${cells.map(c => {
+                            const dateISO = formatDateISO(new Date(c.year, c.month, c.day));
+                            const hasData = getDateIndicators(dateISO);
+                            const isSelected = isSameDay(selectedDiaryDate, new Date(c.year, c.month, c.day));
+                            return `<div class="calendar-day ${c.other ? 'other-month':''} ${isSelected?'selected':''}" data-date="${dateISO}" data-year="${c.year}" data-month="${c.month}" data-day="${c.day}">
+                                ${c.day}
+                                ${hasData ? '<div class="dots">' + hasData.map(() => '<span class="dot"></span>').join('') + '</div>' : ''}
+                            </div>`;
+                        }).join('')}
+                    </div>
+                </div>
+                <div class="glass-card" style="margin-top:1.25rem;">
+                    <div class="card-title">Detalhes do dia selecionado</div>
+                    <div id="calendar-day-details"></div>
+                </div>
+            `;
+            document.querySelectorAll('.calendar-day').forEach(el => {
+                el.addEventListener('click', () => {
+                    const dateISO = el.dataset.date;
+                    selectedDiaryDate = dateFromISO(dateISO);
+                    currentMonth = Number(el.dataset.month);
+                    currentYear = Number(el.dataset.year);
+                    renderCalendarPage(container);
+                    renderCalendarDayDetails(dateISO);
+                });
+            });
+            renderCalendarDayDetails(todayISO());
+        }
+        function changeMonth(delta) {
+            currentMonth += delta;
+            if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+            if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+            renderCurrentPage();
+        }
+        function getDateIndicators(dateISO) {
+            const dots = [];
+            if (appState.events.some(e => e.date === dateISO)) dots.push('event');
+            if (appState.diary.some(d => d.date === dateISO)) dots.push('diary');
+            if (appState.tasks.some(t => t.dueDate === dateISO && t.completed)) dots.push('task');
+            if (appState.health.some(h => h.date === dateISO)) dots.push('health');
+            return dots.slice(0,3);
+        }
+        function renderCalendarDayDetails(dateISO) {
+            const container = document.getElementById('calendar-day-details');
+            if (!container) return;
+            const events = appState.events.filter(e => e.date === dateISO);
+            const diary = appState.diary.find(d => d.date === dateISO);
+            const tasks = appState.tasks.filter(t => t.dueDate === dateISO);
+            const habits = appState.habits.filter(h => appState.completedActions['habit_' + h.id + '_' + dateISO]);
+            const quests = appState.quests.filter(q => q.createdAt === dateISO);
+            container.innerHTML = `
+                <p><strong>Eventos:</strong> ${events.length > 0 ? events.map(e => `${e.startTime} ${escapeHTML(e.name)}`).join(', ') : 'Nenhum'}</p>
+                <p><strong>Diário:</strong> ${diary ? 'Entrada registrada' : 'Sem entrada'}</p>
+                <p><strong>Tarefas:</strong> ${tasks.length > 0 ? tasks.map(t => escapeHTML(t.name)).join(', ') : 'Nenhuma'}</p>
+                <p><strong>Hábitos concluídos:</strong> ${habits.length > 0 ? habits.map(h => escapeHTML(h.name)).join(', ') : 'Nenhum'}</p>
+                <p><strong>Quests:</strong> ${quests.length > 0 ? quests.map(q => escapeHTML(q.name)).join(', ') : 'Nenhuma'}</p>
+                ${events.length > 0 ? `<button class="btn btn-sm btn-ghost" onclick="navigate('routine')">Ver rotina</button>` : ''}
+            `;
+        }
+
+        // ===== DIARY =====
+        function renderDiaryPage(container) {
+            container.innerHTML = `
+                <div class="page-grid grid-2">
+                    <div class="glass-card">
+                        <div class="card-title">SEU DIÁRIO</div>
+                        <div style="margin-bottom:1rem;">${renderSmallCalendar()}</div>
+                    </div>
+                    <div class="glass-card">
+                        <div class="card-title" id="diary-date-title">${formatDateBR(selectedDiaryDate)}</div>
+                        <div id="diary-entry-content"></div>
+                    </div>
+                </div>
+            `;
+            renderDiaryEntry();
+            attachSmallCalendarListeners();
+        }
+        function renderSmallCalendar() {
+            const year = selectedDiaryDate.getFullYear();
+            const month = selectedDiaryDate.getMonth();
+            const firstDay = new Date(year, month, 1);
+            const daysInMonth = new Date(year, month+1, 0).getDate();
+            const startWeekday = firstDay.getDay();
+            const prevMonthDays = new Date(year, month, 0).getDate();
+            const cells = [];
+            for (let i = startWeekday - 1; i >= 0; i--) cells.push({ day: prevMonthDays - i, month: month-1, year, other: true });
+            for (let d = 1; d <= daysInMonth; d++) cells.push({ day: d, month, year, other: false });
+            const remaining = (7 - (cells.length % 7)) % 7;
+            for (let i = 1; i <= remaining; i++) cells.push({ day: i, month: month+1, year, other: true });
+            return `<div class="calendar-grid">${CONFIG.DAYS_SHORT.map(d => `<div style="text-align:center;font-size:0.7rem;color:var(--muted);">${d}</div>`).join('')}
+                ${cells.map(c => {
+                    const dateISO = formatDateISO(new Date(c.year, c.month, c.day));
+                    const selected = isSameDay(selectedDiaryDate, new Date(c.year, c.month, c.day));
+                    const hasDiary = appState.diary.some(d => d.date === dateISO);
+                    return `<div class="calendar-day ${c.other?'other-month':''} ${selected?'selected':''}" data-date="${dateISO}" data-year="${c.year}" data-month="${c.month}" data-day="${c.day}">${c.day}${hasDiary?'<span class="dot" style="width:6px;height:6px;background:var(--success);border-radius:50%;display:inline-block;margin-top:2px;"></span>':''}</div>`;
+                }).join('')}</div>`;
+        }
+        function attachSmallCalendarListeners() {
+            document.querySelectorAll('#diary-entry-content .calendar-day, #diary-entry-content .calendar-day').forEach(el => {
+                el.addEventListener('click', () => {
+                    selectedDiaryDate = dateFromISO(el.dataset.date);
+                    renderDiaryPage(document.getElementById('page-content'));
+                });
+            });
+            // Need to re-query as innerHTML changed
+            document.querySelectorAll('.glass-card .calendar-day').forEach(el => {
+                el.onclick = () => {
+                    selectedDiaryDate = dateFromISO(el.dataset.date);
+                    renderDiaryPage(document.getElementById('page-content'));
+                };
+            });
+        }
+        function renderDiaryEntry() {
+            const container = document.getElementById('diary-entry-content');
+            const dateISO = formatDateISO(selectedDiaryDate);
+            const entry = appState.diary.find(d => d.date === dateISO);
+            if (!entry) {
+                const daysDiff = Math.floor((todayStart() - new Date(selectedDiaryDate.getFullYear(), selectedDiaryDate.getMonth(), selectedDiaryDate.getDate())) / CONFIG.DAY_MS);
+                const canEdit = daysDiff <= 3 && daysDiff >= 0;
+                container.innerHTML = `
+                    <p class="text-muted">Nada escrito ainda.</p>
+                    <p>Escreva o primeiro ou toque num dia do calendário para revelar. Esqueceu de escrever? Dá para voltar até 3 dias — só que aí não pontua.</p>
+                    ${canEdit ? `<button class="btn btn-primary btn-sm" onclick="openDiaryEntryModal('${dateISO}')">${ICONS.plus} Escrever</button>` : '<p class="text-muted">Este dia não pode mais ser editado.</p>'}
+                `;
+            } else {
+                container.innerHTML = `
+                    <h3>${escapeHTML(entry.title || 'Sem título')}</h3>
+                    <p>${escapeHTML(entry.text || '')}</p>
+                    <p><strong>Humor:</strong> ${entry.mood || 'N/A'} | <strong>Energia:</strong> ${entry.energy || 'N/A'}/10</p>
+                    <p><strong>Tags:</strong> ${entry.tags ? entry.tags.map(t => '#' + escapeHTML(t)).join(' ') : 'Nenhuma'}</p>
+                    <button class="btn btn-sm btn-ghost" onclick="openDiaryEntryModal('${dateISO}')">Editar</button>
+                `;
+            }
+            document.getElementById('diary-date-title').textContent = formatDateBR(selectedDiaryDate);
+        }
+        function openDiaryEntryModal(dateISO) {
+            const entry = appState.diary.find(d => d.date === dateISO);
+            const html = modalHeader('Entrada do diário') + `
+                <div class="form-group"><label class="label">Título</label><input class="input" id="diary_title" type="text" value="${escapeHTML(entry?.title || '')}" placeholder="Título"></div>
+                <div class="form-group"><label class="label">Texto</label><textarea class="textarea" id="diary_text">${escapeHTML(entry?.text || '')}</textarea></div>
+                <div class="form-group"><label class="label">Humor (1-10)</label><input class="input" id="diary_mood" type="number" min="1" max="10" value="${entry?.mood || 5}"></div>
+                <div class="form-group"><label class="label">Energia (1-10)</label><input class="input" id="diary_energy" type="number" min="1" max="10" value="${entry?.energy || 5}"></div>
+                <div class="form-group"><label class="label">Tags (separadas por vírgula)</label><input class="input" id="diary_tags" type="text" value="${entry?.tags ? entry.tags.join(', ') : ''}" placeholder="trabalho, treino, estudo"></div>
+                <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" onclick="saveDiaryEntry('${dateISO}')">Salvar</button></div>
+            `;
+            openModal(html);
+        }
+        function saveDiaryEntry(dateISO) {
+            const title = document.getElementById('diary_title')?.value || '';
+            const text = document.getElementById('diary_text')?.value || '';
+            const mood = safeNumber(document.getElementById('diary_mood')?.value, 5);
+            const energy = safeNumber(document.getElementById('diary_energy')?.value, 5);
+            const tags = (document.getElementById('diary_tags')?.value || '').split(',').map(s => s.trim()).filter(Boolean);
+            const existing = appState.diary.find(d => d.date === dateISO);
+            if (existing) {
+                Object.assign(existing, { title, text, mood, energy, tags });
+            } else {
+                appState.diary.push({ id: uid(), date: dateISO, title, text, mood, energy, tags, createdAt: todayISO() });
+                const daysDiff = Math.floor((todayStart() - dateFromISO(dateISO)) / CONFIG.DAY_MS);
+                if (daysDiff <= 0) {
+                    addXP(CONFIG.XP_REWARDS.diary, 'Diário registrado', 'diary_' + dateISO);
+                }
+            }
+            saveState();
+            closeModal();
+            renderCurrentPage();
+        }
+
+        // ===== REFLECTION =====
+        function openReflectionModal() {
+            const html = modalHeader('Reflexão diária') + `
+                <div class="form-group"><label class="label">Quem dominou hoje?</label><select class="select" id="reflection_dominant"><option>Disciplina</option><option>Impulso</option><option>Outro</option></select></div>
+                <div class="form-group"><label class="label">Por quê? / O que aconteceu hoje?</label><textarea class="textarea" id="reflection_why"></textarea></div>
+                <div class="form-group"><label class="label">O que funcionou?</label><textarea class="textarea" id="reflection_worked"></textarea></div>
+                <div class="form-group"><label class="label">O que não funcionou?</label><textarea class="textarea" id="reflection_notworked"></textarea></div>
+                <div class="form-group"><label class="label">O que eu faria diferente?</label><textarea class="textarea" id="reflection_different"></textarea></div>
+                <div class="form-group"><label class="label">Qual foi minha principal vitória?</label><textarea class="textarea" id="reflection_win"></textarea></div>
+                <div class="form-group"><label class="label">Qual é a prioridade de amanhã?</label><textarea class="textarea" id="reflection_priority"></textarea></div>
+                <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" onclick="saveReflection()">Concluir reflexão</button></div>
+            `;
+            openModal(html);
+        }
+        function saveReflection() {
+            const dominant = document.getElementById('reflection_dominant')?.value || 'Disciplina';
+            const why = document.getElementById('reflection_why')?.value || '';
+            if (!why.trim()) return showToast('Escreva pelo menos o porquê', 'warning');
+            const reflection = { id: uid(), date: todayISO(), dominant, why, worked: document.getElementById('reflection_worked')?.value || '', notworked: document.getElementById('reflection_notworked')?.value || '', different: document.getElementById('reflection_different')?.value || '', win: document.getElementById('reflection_win')?.value || '', priority: document.getElementById('reflection_priority')?.value || '' };
+            if (!appState.reflections) appState.reflections = [];
+            appState.reflections.push(reflection);
+            addXP(CONFIG.XP_REWARDS.reflection, 'Reflexão diária', 'reflection_' + todayISO());
+            if (dominant === 'Disciplina') registerAlterEgoAction('ae_alfredo', 'positive', 'Reflexão: Disciplina dominou');
+            else if (dominant === 'Impulso') registerAlterEgoAction('ae_beto', 'positive', 'Reflexão: Impulso dominou');
+            saveState();
+            closeModal();
+            renderCurrentPage();
+        }
+
+        // ===== ALTER EGOS =====
+        function renderAlterEgosPage(container) {
+            const period = document.getElementById('alter-period')?.value || '7';
+            const dominant = getDominantAlterEgo(Number(period));
+            container.innerHTML = `
+                <div class="page-grid">
+                    <div class="glass-card" style="display:flex;justify-content:space-between;align-items:center;">
+                        <h2 class="card-title">ALTER EGOS</h2>
+                        <div style="display:flex;gap:0.5rem;">
+                            <select class="select" id="alter-period" style="width:auto;" onchange="renderCurrentPage()">
+                                <option value="1" ${period==='1'?'selected':''}>Hoje</option>
+                                <option value="7" ${period==='7'?'selected':''}>7 dias</option>
+                                <option value="30" ${period==='30'?'selected':''}>30 dias</option>
+                            </select>
+                            <button class="btn btn-sm btn-primary" onclick="openAlterEgoModal()">${ICONS.plus} Novo</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="page-grid grid-2" style="margin-top:1.25rem;">
+                    <div class="glass-card">
+                        <div class="card-title">QUEM ESTÁ DOMINANDO</div>
+                        ${dominant ? `
+                            <div style="text-align:center;font-size:1.5rem;font-weight:800;">${escapeHTML(dominant.alterEgo.name)}</div>
+                            <div style="text-align:center;color:var(--muted);">${escapeHTML(dominant.alterEgo.description)}</div>
+                            <div style="display:flex;justify-content:space-between;margin:1rem 0;">
+                                <span>${dominant.percent}%</span>
+                                <span>${100 - dominant.percent}%</span>
+                            </div>
+                            <div class="progress-bar"><div class="progress-fill" style="width:${dominant.percent}%"></div></div>
+                            <p class="text-muted" style="margin-top:0.5rem;">A porcentagem é calculada pelas ações registradas no período.</p>
+                            <button class="btn btn-sm btn-ghost" onclick="showAlterEgoHistory()">Ver histórico</button>
+                        ` : '<div class="empty-state">Dados insuficientes.</div>'}
+                    </div>
+                    <div class="glass-card">
+                        <div class="card-title">REGISTRAR AÇÃO</div>
+                        <div class="form-group"><label class="label">Alter Ego</label><select class="select" id="ae_action_ego">${appState.alterEgos.map(ae => `<option value="${ae.id}">${escapeHTML(ae.name)}</option>`).join('')}</select></div>
+                        <div class="form-group"><label class="label">Tipo</label><select class="select" id="ae_action_type"><option value="positive">Positiva</option><option value="negative">Negativa</option></select></div>
+                        <div class="form-group"><label class="label">Descrição</label><input class="input" id="ae_action_desc" type="text" placeholder="Ex: Estudei 1h"></div>
+                        <button class="btn btn-primary" onclick="registerAlterEgoActionFromUI()">Registrar</button>
+                    </div>
+                </div>
+                <div class="page-grid grid-2" style="margin-top:1.25rem;">
+                    ${appState.alterEgos.map(ae => `
+                        <div class="glass-card">
+                            <div class="list-item" style="border:none;background:transparent;padding:0;">
+                                <div class="item-icon" style="background:${ae.color}20;color:${ae.color};">${escapeHTML(ae.avatar || '👤')}</div>
+                                <div class="item-content">
+                                    <div class="item-title">${escapeHTML(ae.name)}</div>
+                                    <div class="item-sub">${escapeHTML(ae.description)}</div>
+                                    <div class="item-sub">Princípios: ${escapeHTML(ae.principles || 'N/A')}</div>
+                                </div>
+                                <div class="item-actions">
+                                    <button class="btn btn-sm btn-ghost" onclick="openAlterEgoModal('${ae.id}')">Editar</button>
+                                    <button class="btn btn-sm btn-danger" onclick="deleteAlterEgo('${ae.id}')">${ICONS.trash}</button>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('') || '<div class="empty-state">Nenhum Alter Ego.</div>'}
+                </div>
+            `;
+        }
+        function getDominantAlterEgo(periodDays) {
+            const now = Date.now();
+            const cutoff = now - periodDays * CONFIG.DAY_MS;
+            const actions = appState.alterEgoActions.filter(a => a.timestamp >= cutoff && a.type === 'positive');
+            if (actions.length === 0) return null;
+            const counts = {};
+            for (const ae of appState.alterEgos) counts[ae.id] = 0;
+            for (const a of actions) counts[a.alterEgoId] = (counts[a.alterEgoId] || 0) + 1;
+            const total = Object.values(counts).reduce((s,v) => s+v, 0);
+            if (total === 0) return null;
+            let maxAe = appState.alterEgos[0];
+            let maxCount = 0;
+            for (const ae of appState.alterEgos) {
+                if ((counts[ae.id] || 0) > maxCount) { maxCount = counts[ae.id] || 0; maxAe = ae; }
+            }
+            const percent = Math.round((maxCount / total) * 100);
+            return { alterEgo: maxAe, percent, counts, total };
+        }
+        function registerAlterEgoAction(alterEgoId, type, description) {
+            if (!appState.alterEgoActions) appState.alterEgoActions = [];
+            appState.alterEgoActions.push({ id: uid(), alterEgoId, type, description, timestamp: Date.now(), date: todayISO() });
+            saveState();
+        }
+        function registerAlterEgoActionFromUI() {
+            const alterEgoId = document.getElementById('ae_action_ego')?.value;
+            const type = document.getElementById('ae_action_type')?.value || 'positive';
+            const desc = document.getElementById('ae_action_desc')?.value.trim();
+            if (!desc) return showToast('Descreva a ação', 'warning');
+            registerAlterEgoAction(alterEgoId, type, desc);
+            showToast('Ação registrada', 'success');
+            renderCurrentPage();
+        }
+        function openAlterEgoModal(id) {
+            const ae = id ? appState.alterEgos.find(x => x.id === id) : null;
+            const html = modalHeader(ae ? 'Editar Alter Ego' : 'Novo Alter Ego') + `
+                <div class="form-group"><label class="label">Nome</label><input class="input" id="ae_name" type="text" value="${escapeHTML(ae?.name || '')}" placeholder="Ex: Estrategista"></div>
+                <div class="form-group"><label class="label">Descrição</label><input class="input" id="ae_desc" type="text" value="${escapeHTML(ae?.description || '')}" placeholder="Ex: Planejamento"></div>
+                <div class="form-group"><label class="label">Avatar (emoji ou letra)</label><input class="input" id="ae_avatar" type="text" value="${escapeHTML(ae?.avatar || '')}" placeholder="🛡️"></div>
+                <div class="form-group"><label class="label">Cor</label><input class="input" id="ae_color" type="color" value="${ae?.color || '#3b82f6'}"></div>
+                <div class="form-group"><label class="label">Princípios</label><input class="input" id="ae_principles" type="text" value="${escapeHTML(ae?.principles || '')}" placeholder="Princípios"></div>
+                <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" onclick="saveAlterEgo('${id || ''}')">Salvar</button></div>
+            `;
+            openModal(html);
+        }
+        function saveAlterEgo(id) {
+            const name = document.getElementById('ae_name')?.value.trim();
+            if (!name) return showToast('Nome obrigatório', 'warning');
+            const description = document.getElementById('ae_desc')?.value || '';
+            const avatar = document.getElementById('ae_avatar')?.value || '👤';
+            const color = document.getElementById('ae_color')?.value || '#3b82f6';
+            const principles = document.getElementById('ae_principles')?.value || '';
+            if (id) {
+                const ae = appState.alterEgos.find(x => x.id === id);
+                if (ae) Object.assign(ae, { name, description, avatar, color, principles });
+            } else {
+                appState.alterEgos.push({ id: uid(), name, description, avatar, color, principles, habits: [], quests: [], positive: [], negative: [] });
+            }
+            saveState();
+            closeModal();
+            renderCurrentPage();
+        }
+        function deleteAlterEgo(id) {
+            if (!confirm('Excluir Alter Ego?')) return;
+            appState.alterEgos = appState.alterEgos.filter(ae => ae.id !== id);
+            saveState();
+            renderCurrentPage();
+        }
+        function showAlterEgoHistory() {
+            const actions = appState.alterEgoActions.slice(-50).reverse();
+            const html = modalHeader('Histórico de ações') + `
+                <div style="max-height:400px;overflow-y:auto;">${actions.map(a => {
+                    const ae = appState.alterEgos.find(x => x.id === a.alterEgoId);
+                    return `<div class="list-item"><div class="item-icon">${escapeHTML(ae?.avatar || '👤')}</div><div class="item-content"><div class="item-title">${escapeHTML(a.description)}</div><div class="item-sub">${escapeHTML(ae?.name || 'Desconhecido')} · ${a.type === 'positive' ? 'Positiva' : 'Negativa'}</div></div></div>`;
+                }).join('') || '<p>Sem ações.</p>'}</div>
+                <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal()">Fechar</button></div>
+            `;
+            openModal(html);
+        }
+
+        // ===== GOALS =====
+        function renderGoalsPage(container) {
+            container.innerHTML = `
+                <div class="page-grid">
+                    <div class="glass-card" style="display:flex;justify-content:space-between;align-items:center;">
+                        <h2 class="card-title">METAS</h2>
+                        <button class="btn btn-primary btn-sm" onclick="openGoalModal()">${ICONS.plus} Nova meta</button>
+                    </div>
+                </div>
+                <div class="page-grid grid-2" style="margin-top:1.25rem;">
+                    ${appState.goals.map(g => {
+                        const progress = g.target > 0 ? Math.min(100, Math.round((g.current / g.target) * 100)) : 0;
+                        return `
+                        <div class="glass-card">
+                            <div class="list-item" style="border:none;background:transparent;padding:0;">
+                                <div class="item-icon">${ICONS.goals}</div>
+                                <div class="item-content">
+                                    <div class="item-title">${escapeHTML(g.name)}</div>
+                                    <div class="item-sub">${escapeHTML(g.description || '')}</div>
+                                    <div class="item-sub">Progresso: ${g.current}/${g.target} ${g.metric} (${progress}%)</div>
+                                    <div class="progress-bar" style="margin-top:0.5rem;"><div class="progress-fill" style="width:${progress}%"></div></div>
+                                    <div class="item-sub">Prazo: ${g.deadline || 'Sem prazo'} · Categoria: ${escapeHTML(g.category || 'Geral')}</div>
+                                </div>
+                                <div class="item-actions">
+                                    <button class="btn btn-sm btn-ghost" onclick="openGoalModal('${g.id}')">Editar</button>
+                                    <button class="btn btn-sm btn-danger" onclick="deleteGoal('${g.id}')">${ICONS.trash}</button>
+                                </div>
+                            </div>
+                        </div>`;
+                    }).join('') || '<div class="empty-state">Nenhuma meta criada.</div>'}
+                </div>
+            `;
+        }
+        function openGoalModal(id) {
+            const g = id ? appState.goals.find(x => x.id === id) : null;
+            const html = modalHeader(g ? 'Editar meta' : 'Nova meta') + `
+                <div class="form-group"><label class="label">Nome</label><input class="input" id="goal_name" type="text" value="${escapeHTML(g?.name || '')}" placeholder="Ex: Ler 20 livros"></div>
+                <div class="form-group"><label class="label">Descrição</label><textarea class="textarea" id="goal_desc">${escapeHTML(g?.description || '')}</textarea></div>
+                <div class="form-group"><label class="label">Valor atual</label><input class="input" id="goal_current" type="number" value="${g?.current || 0}"></div>
+                <div class="form-group"><label class="label">Valor alvo</label><input class="input" id="goal_target" type="number" value="${g?.target || 1}"></div>
+                <div class="form-group"><label class="label">Métrica</label><input class="input" id="goal_metric" type="text" value="${escapeHTML(g?.metric || '')}" placeholder="Ex: livros, kg, km"></div>
+                <div class="form-group"><label class="label">Categoria</label><input class="input" id="goal_category" type="text" value="${escapeHTML(g?.category || '')}" placeholder="Ex: Estudo"></div>
+                <div class="form-group"><label class="label">Prazo</label><input class="input" id="goal_deadline" type="date" value="${g?.deadline || ''}"></div>
+                <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" onclick="saveGoal('${id || ''}')">Salvar</button></div>
+            `;
+            openModal(html);
+        }
+        function saveGoal(id) {
+            const name = document.getElementById('goal_name')?.value.trim();
+            if (!name) return showToast('Nome obrigatório', 'warning');
+            const description = document.getElementById('goal_desc')?.value || '';
+            const current = safeNumber(document.getElementById('goal_current')?.value, 0);
+            const target = safeNumber(document.getElementById('goal_target')?.value, 1);
+            const metric = document.getElementById('goal_metric')?.value || '';
+            const category = document.getElementById('goal_category')?.value || '';
+            const deadline = document.getElementById('goal_deadline')?.value || null;
+            if (id) {
+                const g = appState.goals.find(x => x.id === id);
+                if (g) Object.assign(g, { name, description, current, target, metric, category, deadline });
+            } else {
+                appState.goals.push({ id: uid(), name, description, current, target, metric, category, deadline, createdAt: todayISO() });
+            }
+            saveState();
+            closeModal();
+            renderCurrentPage();
+        }
+        function deleteGoal(id) {
+            if (!confirm('Excluir meta?')) return;
+            appState.goals = appState.goals.filter(g => g.id !== id);
+            saveState();
+            renderCurrentPage();
+        }
+
+        // ===== FINANCE =====
+        function renderFinancePage(container) {
+            const income = appState.finances.filter(f => f.type === 'income').reduce((s,f) => s + f.amount, 0);
+            const expenses = appState.finances.filter(f => f.type === 'expense').reduce((s,f) => s + f.amount, 0);
+            const balance = income - expenses;
+            const patrimonyTotal = calculatePatrimony();
+            container.innerHTML = `
+                <div class="page-grid grid-3">
+                    <div class="glass-card"><div class="card-title">RECEITAS</div><
