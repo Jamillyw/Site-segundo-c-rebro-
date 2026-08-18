@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MBC Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- RESET & VARIABLES --- */
+        :root {
+            --bg-dark: #070714;
+            --bg-card: rgba(18, 25, 65, 0.7);
+            --accent-purple: #5b21b6;
+            --accent-blue: #2563eb;
+            --accent-cyan: #06b6d4;
+            --text-main: #ffffff;
+            --text-muted: #8b8ea8;
+            --sidebar-width: 260px;
+            --transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Montserrat', sans-serif; }
+        
+        body {
+            background-color: var(--bg-dark);
+            background-image: radial-gradient(circle at 80% 20%, #1a1a48 0%, #050510 100%);
+            color: var(--text-main);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+        }
+
+        /* --- SIDEBAR (PC) --- */
+        nav {
+            width: var(--sidebar-width);
+            height: 100%;
+            background: rgba(13, 17, 45, 0.8);
+            backdrop-filter: blur(12px);
+            border-right: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            flex-direction: column;
+            padding: 2rem 1.5rem;
+            position: relative;
+            transition: transform 0.4s ease;
+            z-index: 10;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 3rem;
+        }
+        .logo-area .icon { width: 32px; height: 32px; background: var(--accent-purple); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; }
+
+        .nav-links {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .nav-link:hover, .nav-link.active {
+            background: rgba(37, 99, 235, 0.2);
+            color: white;
+            transform: translateX(4px);
+        }
+
+        .nav-icon { width: 20px; text-align: center; }
+
+        .user-area {
+            margin-top: auto;
+            padding: 1rem;
+            background: rgba(255,255,255,0.03);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .user-area:hover { background: rgba(255,255,255,0.08); }
+        .avatar { width: 40px; height: 40px; border-radius: 50%; background: url('https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80') center/cover; }
+
+        /* --- MAIN CONTENT --- */
+        main {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .view-container {
+            display: none;
+            opacity: 0;
+            animation: fadeSlideIn 0.6s forwards;
+        }
+        .view-container.active { display: block; }
+
+        @keyframes fadeSlideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- COMMON UI COMPONENTS --- */
+        .card {
+            background: var(--bg-card);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 20px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+
+        .progress-ring {
+            width: 120px; height: 120px;
+            border-radius: 50%;
+            background: conic-gradient(var(--accent-cyan) 0%, var(--accent-blue) 0%, rgba(255,255,255,0.1) 0%);
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto;
+        }
+        .progress-ring-inner {
+            width: 100px; height: 100px; background: var(--bg-dark);
+            border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .ring-number { font-size: 2rem; font-weight: 700; }
+        
+        .list-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .tag { background: rgba(255,255,255,0.1); padding: 2px 8px; border-radius: 8px; font-size: 0.75rem; }
+
+        /* --- DASHBOARD / ROUTINE VIEW --- */
+        .timeline-item {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+            align-items: center;
+        }
+        .time-badge { width: 50px; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); }
+        .timeline-item .bar { height: 4px; flex: 1; background: rgba(255,255,255,0.05); border-radius: 4px; position: relative; }
+        .timeline-item .bar::after { content: ''; position: absolute; left: 0; top: 0; height: 100%; width: 70%; background: var(--accent-blue); border-radius: 4px; }
+
+        /* --- FINANCIAL VIEW --- */
+        .chart-container { height: 200px; width: 100%; background: rgba(0,0,0,0.2); border-radius: 12px; position: relative; }
+        .chart-svg { width: 100%; height: 100%; }
+        
+        /* --- GAMIFICATION (EGOS) --- */
+        .ego-battle { display: flex; justify-content: space-between; text-align: center; margin: 1.5rem 0; }
+        .ego-card { flex: 0.45; }
+        .ego-icon { width: 80px; height: 80px; border-radius: 50%; background: #151d4a; margin: 0 auto 1rem; display: flex; align-items: center; justify-content: center; border: 2px solid var(--accent-blue); }
+        .vs-text { color: var(--text-muted); font-weight: bold; align-self: center; }
+
+        /* --- MOBILE ADAPTIVITY --- */
+        .mobile-toggle { display: none; position: absolute; top: 20px; left: 20px; z-index: 20; background: var(--bg-card); border: none; color: white; font-size: 1.5rem; padding: 10px; border-radius: 10px; cursor: pointer; }
+
+        @media (max-width: 850px) {
+            .grid-2 { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 768px) {
+            body { position: relative; }
+            .mobile-toggle { display: block; }
+            
+            nav {
+                position: absolute;
+                top: 0; left: 0;
+                transform: translateX(-100%);
+                width: 75%;
+                height: 100vh;
+                border-radius: 0 20px 20px 0;
+                box-shadow: 10px 0 30px rgba(0,0,0,0.5);
+            }
+            nav.open { transform: translateX(0); }
+
+            main { padding: 4rem 1rem 1rem 1rem; }
+            .view-container.active { display: block; }
+            .card { padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <button class="mobile-toggle" id="menuToggle">☰</button>
+
+    <nav id="sidebar">
+        <div class="logo-area">
+            <div class="icon">M</div>
+            <span style="font-weight: 700; letter-spacing: 2px;">MBCNATE</span>
+        </div>
+        
+        <div class="nav-links">
+            <a class="nav-link active" onclick="navigateTo('view-dashboard', this)">
+                <span class="nav-icon">⌂</span> Visão Geral
+            </a>
+            <a class="nav-link" onclick="navigateTo('view-routine', this)">
+                <span class="nav-icon">📅</span> Rotina
+            </a>
+            <a class="nav-link" onclick="navigateTo('view-training', this)">
+                <span class="nav-icon">🏋️</span> Treinos
+            </a>
+            <a class="nav-link" onclick="navigateTo('view-finances', this)">
+                <span class="nav-icon">💰</span> Finanças
+            </a>
+            <a class="nav-link" onclick="navigateTo('view-diary', this)">
+                <span class="nav-icon">📖</span> Diário
+            </a>
+            <a class="nav-link" onclick="navigateTo('view-egos', this)">
+                <span class="nav-icon">⚔️</span> Alter Egos
+            </a>
+        </div>
+
+        <div class="user-area" onclick="navigateTo('view-dashboard', document.querySelector('.nav-link'))">
+            <div class="avatar"></div>
+            <div>
+                <div style="font-weight: 600; font-size: 0.9rem;">Nathan MBC</div>
+                <div style="font-size: 0.7rem; color: var(--text-muted);">Nível 4</div>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        <!-- VIEW 1: DASHBOARD (Rotina do Dia) -->
+        <div id="view-dashboard" class="view-container active">
+            <h2 style="font-weight: 300; margin-bottom: 20px;">Visão Geral</h2>
+            <div class="card" style="background: linear-gradient(to right, #1e1b4b, #312e81);">
+                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px;">
+                    <div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">PROGRESSO DO DIA</div>
+                        <div class="progress-ring">
+                            <div class="progress-ring-inner">
+                                <span class="ring-number">0%</span>
+                                <span style="font-size: 0.7rem; color: var(--text-muted);">290 XP</span>
+                            </div>
+                        </div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted); text-align: center; margin-top: 5px;">faltam 160 XP pro Nível 4</div>
+                    </div>
+                    <div style="flex: 1; min-width: 200px;">
+                        <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 10px;">ROTINA DE HOJE</div>
+                        <div class="timeline-item"><span class="time-badge">08:00</span> <span>Acordar</span> <div class="bar" style="width: 100%;"></div></div>
+                        <div class="timeline-item"><span class="time-badge">08:30</span> <span>Café</span> <div class="bar" style="width: 100%;"></div></div>
+                        <div class="timeline-item"><span class="time-badge">09:00</span> <span>Cardio</span> <div class="bar" style="width: 100%;"></div></div>
+                        <div class="timeline-item"><span class="time-badge">12:00</span> <span>Academia</span> <div class="bar" style="width: 50%;"></div></div>
+                    </div>
+                </div>
+            </div>
+            <div class="grid-2">
+                <div class="card">
+                    <h4 style="color: var(--text-muted); margin-bottom: 1rem;">Estado Atual</h4>
+                    <div style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 12px; text-align: center; border: 2px solid var(--accent-cyan);">OFENSIVA</div>
+                    <div style="margin-top: 1rem; font-size: 0.85rem;">Assista vídeo curto por 10 minutos seguidos.</div>
+                </div>
+                <div class="card">
+                    <h4 style="color: var(--text-muted); margin-bottom: 1rem;">Missão Ativa</h4>
+                    <div style="padding: 1rem; background: rgba(255,255,255,0.05); border-radius: 12px;">
+                        Fazer treino full body 2 dias para bater a comunidade.
+                        <div style="margin-top: 1rem; background: #2d3748; height: 6px; border-radius: 4px;"><div style="width: 30%; height: 100%; background: var(--accent-purple); border-radius: 4px;"></div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW 2: TREINOS -->
+        <div id="view-training" class="view-container">
+            <h2 style="font-weight: 300; margin-bottom: 20px;">Treinos e Evolução</h2>
+            <div class="grid-2">
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                        <h3>TREINO B</h3>
+                        <span class="tag">8 Exercícios</span>
+                    </div>
+                    <ul style="list-style: none; text-align: left;">
+                        <li class="list-row"><span>Leg Press</span> <span style="color: var(--text-muted); font-size: 0.8rem;">3x 30</span></li>
+                        <li class="list-row"><span>Mesa Flexora</span> <span style="color: var(--text-muted); font-size: 0.8rem;">3x 15</span></li>
+                        <li class="list-row"><span>Remada com halter</span> <span style="color: var(--text-muted); font-size: 0.8rem;">3x 12</span></li>
+                        <li class="list-row"><span>Crosstraining</span> <span style="color: var(--text-muted); font-size: 0.8rem;">3x 10</span></li>
+                        <li class="list-row"><span>Rosca Martelo</span> <span style="color: var(--text-muted); font-size: 0.8rem;">3x 15</span></li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h4 style="color: var(--text-muted); margin-bottom: 1rem;">Outras Fichas</h4>
+                    <div class="list-row">TREINO C <span class="tag">6 exercícios</span></div>
+                    <div class="list-row">TREINO A <span class="tag">8 exercícios</span></div>
+                    <div style="margin-top: 1.5rem;">
+                        <div style="font-weight: 600;">Carga de Trabalho</div>
+                        <div style="font-size: 2rem; color: var(--accent-cyan);">20 kg</div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted); margin-top: 1rem;">
+                            <span>Volume Semanal: 17,650 kg</span>
+                            <span>Cardio Semanal: 0 min</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW 3: FINANÇAS -->
+        <div id="view-finances" class="view-container">
+            <h2 style="font-weight: 300; margin-bottom: 20px;">Finanças</h2>
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                    <div>
+                        <div style="color: var(--text-muted); font-size: 0.8rem;">Saldo Atual</div>
+                        <div style="font-size: 2rem; color: #06b6d4;">R$ 45.000,00</div>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <svg class="chart-svg" viewBox="0 0 100 40" preserveAspectRatio="none">
+                        <path d="M 0 35 Q 25 35 50 20 T 100 35 L 100 40 L 0 40 Z" fill="rgba(37, 99, 235, 0.2)"/>
+                        <path d="M 0 35 Q 25 35 50 20 T 100 35" fill="none" stroke="#2563eb" stroke-width="1.5"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="card">
+                <div style="display: flex; justify-content: space-between;">
+                    <h4>Lançamentos</h4>
+                    <span style="font-size: 0.8rem; color: var(--text-muted);">últimos 30 dias</span>
+                </div>
+                <div style="margin-top: 1rem;">
+                    <div class="list-row"><span>Lazer - 27 de out.</span> <span style="color: #f87171;">- R$ 4.200,00</span></div>
+                    <div class="list-row"><span>Cultura - 27 de out.</span> <span style="color: #f87171;">- R$ 2.800,00</span></div>
+                    <div class="list-row"><span>Saúde - 27 de out.</span> <span style="color: #34d399;">+ R$ 15.000,00</span></div>
+                    <div class="list-row"><span>Cultura - 27 de out.</span> <span style="color: #f87171;">- R$ 1.800,00</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW 4: DIÁRIO -->
+        <div id="view-diary" class="view-container">
+            <h2 style="font-weight: 300; margin-bottom: 20px;">Seu Diário</h2>
+            <div class="grid-2">
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <span>Agosto 2026</span>
+                        <span style="font-size: 1.2rem; cursor: pointer;">‹ ›</span>
+                    </div>
+                    <!-- Simple grid calendar -->
+                    <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; font-size: 0.8rem;">
+                        <div style="color: var(--text-muted);">D</div><div style="color: var(--text-muted);">S</div><div style="color: var(--text-muted);">T</div><div style="color: var(--text-muted);">Q</div><div style="color: var(--text-muted);">Q</div><div style="color: var(--text-muted);">S</div><div style="color: var(--text-muted);">S</div>
+                        <div>1</div><div>2</div><div>3</div><div>4</div><div>5</div><div>6</div><div>7</div>
+                        <div>8</div><div>9</div><div style="background: var(--accent-blue); border-radius: 50%;">11</div><div>12</div><div>13</div><div>14</div><div>15</div>
+                        <div>16</div><div>17</div><div>18</div><div>19</div><div>20</div><div>21</div><div>22</div>
+                        <div>23</div><div>24</div><div>25</div><div>26</div><div>27</div><div>28</div><div>29</div>
+                        <div>30</div><div>31</div>
+                    </div>
+                    <div style="margin-top: 10px; font-size: 0.75rem; color: var(--text-muted);">1 dia de 31 dias preenchidos</div>
+                </div>
+                <div class="card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 300px;">
+                    <div style="width: 50px; height: 50px; background: rgba(255,255,255,0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">✎</div>
+                    <h3 style="margin: 1rem 0 0.5rem;">Nada escrito ainda</h3>
+                    <p style="color: var(--text-muted); font-size: 0.85rem; text-align: center;">Escreva o primeiro dia, ou toque em um dia no calendário para ver.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW 5: ALTER EGOS -->
+        <div id="view-egos" class="view-container">
+            <h2 style="font-weight: 300; margin-bottom: 20px;">Alter Egos</h2>
+            <div class="card">
+                <div style="display: flex; justify-content: space-between;">
+                    <div>
+                        <h4>Quem está dominando?</h4>
+                        <p style="font-size: 0.8rem; color: var(--text-muted);">O duelo de hoje.</p>
+                    </div>
+                    <span style="background: rgba(255,255,255,0.05); padding: 5px 12px; border-radius: 12px; font-size: 0.75rem;">Ainda sem registro</span>
+                </div>
+
+                <div class="ego-battle">
+                    <div class="ego-card">
+                        <div class="ego-icon"><span style="font-size: 1.5rem;">🏋️</span></div>
+                        <div style="font-weight: 700;">ALFREDO</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">DISCIPLINA VENCEU</div>
+                        <div style="font-size: 1.5rem; margin-top: 5px;">0%</div>
+                    </div>
+                    <div class="vs-text">VS</div>
+                    <div class="ego-card">
+                        <div class="ego-icon" style="border-color: var(--accent-cyan);"><span style="font-size: 1.5rem;">🎮</span></div>
+                        <div style="font-weight: 700;">BETO</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">IMPULSO VENCEU</div>
+                        <div style="font-size: 1.5rem; margin-top: 5px; color: var(--accent-cyan);">100%</div>
+                    </div>
+                </div>
+
+                <div style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 12px; margin-top: 1rem;">
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">REGISTRO DE HOJE</div>
+                    <div style="display: flex; gap: 10px; margin-bottom: 1rem;">
+                        <button style="flex:1; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid var(--accent-blue); border-radius: 10px; color: white; cursor: pointer;">ALFREDO (Disciplina)</button>
+                        <button style="flex:1; padding: 10px; background: var(--accent-cyan); border: none; border-radius: 10px; color: black; cursor: pointer; font-weight: 600;">BETO (Impulso)</button>
+                    </div>
+                    <input type="text" placeholder="Por quê? O que aconteceu hoje..." style="width: 100%; background: transparent; border: none; border-bottom: 1px solid rgba(255,255,255,0.2); padding: 8px; color: white; outline: none;">
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // JavaScript to handle navigation and animations
+        document.addEventListener('DOMContentLoaded', () => {
+            const menuToggle = document.getElementById('menuToggle');
+            const sidebar = document.getElementById('sidebar');
+
+            // Mobile Menu Toggle
+            menuToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('open');
+            });
+
+            // Close menu when clicking a link on mobile
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', () => {
+                    if (window.innerWidth <= 768) {
+                        sidebar.classList.remove('open');
+                    }
+                });
+            });
+        });
+
+        function navigateTo(viewId, element) {
+            // 1. Hide all views
+            const views = document.querySelectorAll('.view-container');
+            views.forEach(view => {
+                view.classList.remove('active');
+            });
+
+            // 2. Show the target view with a brief delay or just instantly
+            const targetView = document.getElementById(viewId);
+            if (targetView) {
+                targetView.classList.add('active');
+                // Restart animation
+                targetView.style.animation = 'none';
+                targetView.offsetHeight; /* trigger reflow */
+                targetView.style.animation = 'fadeSlideIn 0.6s forwards';
+            }
+
+            // 3. Update active state on sidebar
+            const links = document.querySelectorAll('.nav-link');
+            links.forEach(link => {
+                link.classList.remove('active');
+            });
+            if (element) {
+                element.classList.add('active');
+            } else {
+                // fallback to index 0 if called by user area
+                document.querySelector('.nav-link').classList.add('active');
+            }
+        }
+    </script>
+</body>
+</html>
